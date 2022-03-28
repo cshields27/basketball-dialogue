@@ -16,6 +16,18 @@ player_champion,Has _ won the Finals?
 player_champion,Does _ have a title?
 player_champion,Does _ have a ring?
 
+player_allstar,Has _ been an all-star?
+player_allstar,Is _ an all-star?
+player_allstar,_ all-star
+player_allstar,Has _ made the all-star team?
+player_allstar,Has _ played in an all-star game?
+
+player_mvp,Has _ ever won MVP?
+player_mvp,Is _ an MVP?
+player_mvp,How many MVPs has _ won?
+player_mvp,Has _ won MVP?
+player_mvp,_ most valuable player
+
 player_points,What are _'s points per game?
 player_points,How many points per game does _ get?
 player_points,What are _ ppg
