@@ -1,10 +1,10 @@
 player_team,Who does _ play for?
 player_team,What team is _ on?
-player_team,What team does _ play on?
+player_team,What team does _ play for?
 player_team,_ team
 player_team,Which team is _ with?
 
-player_averages,What are _'s averages
+player_averages,What are _'s averages?
 player_averages,What does _ average a game?
 player_averages,What are _'s stats per game?
 player_averages,How many points, rebounds, and assists does _ get?
@@ -22,38 +22,43 @@ player_allstar,_ all-star
 player_allstar,Has _ made the all-star team?
 player_allstar,Has _ played in an all-star game?
 
+player_allnba,Has _ been on an all-nba team?
+player_allnba,Is _ on the all-nba team?
+player_allnba,_ all-nba
+player_allnba,Has _ made the all-nba team?
+
 player_mvp,Has _ ever won MVP?
 player_mvp,Is _ an MVP?
 player_mvp,How many MVPs has _ won?
 player_mvp,Has _ won MVP?
 player_mvp,_ most valuable player
 
-player_points,What are _'s points per game?
-player_points,How many points per game does _ get?
-player_points,What are _ ppg
+player_points,What is _'s points per game?
+player_points,How many points per game does _ average?
+player_points,What is _'s ppg
 player_points,_ ppg
 player_points,How many points does _ average?
 
-player_rebounds,What are _'s rebounds per game?
+player_rebounds,What is _'s rebounds per game?
 player_rebounds,How many rebounds per game does _ get?
-player_rebounds,What are _ rpg?
+player_rebounds,What is _'s rpg?
 player_rebounds,_ rpg
 player_rebounds,How many rebounds does _ average?
 
-player_assists,What are _'s assists per game?
+player_assists,What is _'s assists per game?
 player_assists,How many assists per game does _ get?
-player_assists,What are _ apg?
+player_assists,What is _'s apg?
 player_assists,_ apg
 player_assists,How many assists does _ average?
 
-player_steals,What are _'s steals per game?
+player_steals,What is _'s steals per game?
 player_steals,How many steals per game does _ get?
-player_steals,What are _ spg?
+player_steals,What is _'s spg?
 player_steals,_ spg
 player_steals,How many steals does _ average?
 
-player_blocks,What are _'s blocks per game?
+player_blocks,What is _'s blocks per game?
 player_blocks,How many blocks per game does _ get?
-player_blocks,What are _ bpg?
+player_blocks,What is _'s bpg?
 player_blocks,_ bpg
 player_blocks,How many blocks does _ average?
