@@ -3,14 +3,10 @@ Script to generate answers to several questions for each NBA player
 
 Run to activate venv:
 source /escnfs/home/cmc/public/venv/bin/activate
-
-Also may need to install nba_api:
-pip install nba_api
 '''
 
 import csv
 import requests
-import time
 from bs4 import BeautifulSoup
 import pandas as pd
 
@@ -47,26 +43,33 @@ TEAM_IDS_TO_NAMES = {
 'TOR' : 'Toronto Raptors',
 'UTA'	: 'Utah Jazz',
 'WAS'	: 'Washington Wizards'
-} 
+}
 
 from nba_api.stats.static import players
-from nba_api.stats.endpoints import commonplayerinfo
+
+def get_stat(soup, tag):
+  table = soup.find(class_="stats_table")
+  tbody = table.find('tbody')
+  tr_body = tbody.find_all('tr')[-1]
+  
+  for trb in tr_body:
+    # process row
+    if tag == 'team_id' and trb.get_text() in TEAM_IDS_TO_NAMES:
+      return TEAM_IDS_TO_NAMES[trb.get_text()]
 
 def generate_answers():
   # Process each player
-  for player in players.get_players():
-    # Get info through API
-    time.sleep(.600) # sleep so the api/NBA stats doesn't kick us out
-    player_info = commonplayerinfo.CommonPlayerInfo(player_id=player['id'])
-    player_common = player_info.common_player_info.get_dict()
-
-    # Get team and city
-    team_ind = player_common['headers'].index('TEAM_NAME')
-    city_ind = player_common['headers'].index('TEAM_CITY')
-    team = player_common['data'][0][team_ind]
-    city = player_common['data'][0][city_ind]
-    if team and city:
-      print(f'{player["full_name"]} {city} {team}')    
+  with open(PLAYER_NAMES_PATH, 'r') as f:
+    for i, line in enumerate(f.readlines()):
+      if i == 0: continue
+      name, link = line.strip().split(',')
+      response = requests.get(link).text
+      soup = BeautifulSoup(response, 'html.parser')
+      team_answer = get_stat(soup, 'team_id')
+      if team_answer:
+        print(name, team_answer, link)
+      if i > 5:
+        exit()
 
 def main():
   generate_answers()
