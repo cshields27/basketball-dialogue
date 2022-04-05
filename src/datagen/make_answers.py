@@ -9,50 +9,31 @@ pip install nba_api
 '''
 
 import csv
+import random
 import requests
 import time
 from bs4 import BeautifulSoup
 import pandas as pd
+from collections import defaultdict
 
 PLAYER_NAMES_PATH = '../../data/players.csv'
+QUESTIONS_PATH = '../../data/questiontemplates.txt'
 
-TEAM_IDS_TO_NAMES = {
-'ATL'	: 'Atlanta Hawks',
-'BKN'	: 'Brooklyn Nets',
-'BOS'	: 'Boston Celtics',
-'CHA'	: 'Charlotte Hornets',
-'CHI'	: 'Chicago Bulls',
-'CLE'	: 'Cleveland Cavaliers',
-'DAL'	: 'Dallas Mavericks',
-'DEN'	: 'Denver Nuggets',
-'DET'	: 'Detroit Pistons',
-'GSW'	: 'Golden State Warriors',
-'HOU' : 'Houston Rockets',
-'IND'	: 'Indiana Pacers',
-'LAC'	: 'Los Angeles Clippers',
-'LAL'	: 'Los Angeles Lakers',
-'MEM'	: 'Memphis Grizzlies',
-'MIA'	: 'Miami Heat',
-'MIL'	: 'Milwaukee Bucks',
-'MIN'	: 'Minnesota Timberwolves',
-'NOP'	: 'New Orleans Pelicans',
-'NYK'	: 'New York Knicks',
-'OKC'	: 'Oklahoma City Thunder',
-'ORL'	: 'Orlando Magic',
-'PHI'	: 'Philadelphia 76ers',
-'PHX'	: 'Phoenix Suns',
-'POR' : 'Portland Trail Blazers',
-'SAC'	: 'Sacramento Kings',
-'SAS'	: 'San Antonio Spurs',
-'TOR' : 'Toronto Raptors',
-'UTA'	: 'Utah Jazz',
-'WAS'	: 'Washington Wizards'
-} 
+import pickle
 
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import commonplayerinfo
 
-def generate_answers():
+def generate_questions():
+  ''' Read questions templates into a dict mapping type to templates'''
+  types_to_qs = defaultdict(list)
+  with open(QUESTIONS_PATH, 'r') as f:
+    for line in f.readlines():
+      q_type, q = line.strip().split(',', 1)
+      types_to_qs[q_type].append(q)
+  return types_to_qs
+
+def generate_answers(types_to_qs):
   # Process each player
   for player in players.get_players():
     # Get info through API
@@ -65,11 +46,17 @@ def generate_answers():
     city_ind = player_common['headers'].index('TEAM_CITY')
     team = player_common['data'][0][team_ind]
     city = player_common['data'][0][city_ind]
+
+    # Generate question for team by randomly picking from list
+    q_template = random.choice(types_to_qs['player_team'])
+    question = q_template.replace('_', player['full_name'])
+
     if team and city:
-      print(f'{player["full_name"]} {city} {team}')    
+      print(f'{question} {city} {team}')    
 
 def main():
-  generate_answers()
+  types_to_qs = generate_questions()
+  generate_answers(types_to_qs)
 
 if __name__ == '__main__':
   main()
