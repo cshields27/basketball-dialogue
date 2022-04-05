@@ -23,6 +23,7 @@ import pickle
 
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import commonplayerinfo
+from nba_api.stats.endpoints import playercareerstats
 
 def generate_questions():
   ''' Read questions templates into a dict mapping type to templates'''
@@ -38,18 +39,33 @@ def generate_answers(types_to_qs):
   for player in players.get_players():
     # Get info through API
     time.sleep(.600) # sleep so the api/NBA stats doesn't kick us out
+    # Access API endpoints
     player_info = commonplayerinfo.CommonPlayerInfo(player_id=player['id'])
+    career_stats = playercareerstats.PlayerCareerStats(player_id=player['id'])
+
+    # Get commons player info as well as regular season stats
     player_common = player_info.common_player_info.get_dict()
+    regular_season_stats = career_stats.season_totals_regular_season.get_dict() # TODO need to use this still
 
     # Get team and city
-    team_ind = player_common['headers'].index('TEAM_NAME')
-    city_ind = player_common['headers'].index('TEAM_CITY')
-    team = player_common['data'][0][team_ind]
-    city = player_common['data'][0][city_ind]
+    keys_to_stats = dict(zip(player_common['headers'], player_common['data'][0]))
+
+    team = keys_to_stats['TEAM_NAME']
+    city = keys_to_stats['TEAM_CITY']
+    first_year = keys_to_stats['FROM_YEAR']
+    last_year = keys_to_stats['TO_YEAR']
+    status = keys_to_stats['ROSTERSTATUS']
 
     # Generate question for team by randomly picking from list
     q_template = random.choice(types_to_qs['player_team'])
     question = q_template.replace('_', player['full_name'])
+
+    # For some players, ask for a specific year in the question
+
+    # If player isn't active, switch up the question
+    if status == 'Inactive':
+      question = question.replace('is', 'was')
+      question = question.replace('does', 'did')
 
     if team and city:
       print(f'{question} {city} {team}')    
