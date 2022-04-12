@@ -29,13 +29,13 @@ def generate_questions():
 
 def generate_qa(types_to_qs):
   # Open file
-  with open(CONTEXTS_PATH) as f:
-    lines = f.readlines()
-
+  f_c = open(CONTEXTS_PATH, 'r')
   f_q = open(QUESTIONS_PATH, 'w')
   f_a = open(ANSWERS_PATH, 'w')
+  
+  lines = f_c.readlines()
 
-  for line in lines:
+  for line in lines[::5]:
     player_info = eval(line)
     name = player_info['info']['DISPLAY_FIRST_LAST']
     city = player_info['info']['TEAM_CITY']
@@ -49,10 +49,9 @@ def generate_qa(types_to_qs):
         question = question.replace('is', 'was')
         question = question.replace('does', 'did')
       
-      if team and city:
-        answer = city + ' ' + team
-        f_q.write('{}\n'.format(question))
-        f_a.write('{}\n'.format(answer))
+      answer = city + ' ' + team
+      f_q.write('{}\n'.format(question))
+      f_a.write('{}\n'.format(answer))
 
 def main():
   types_to_qs = generate_questions()
