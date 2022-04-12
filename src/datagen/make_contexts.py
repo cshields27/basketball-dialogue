@@ -1,5 +1,5 @@
 '''
-Script to generate answers to several questions for each NBA player
+Generate file for context where answers will be derived from
 
 Run to activate venv:
 source /escnfs/home/cmc/public/venv/bin/activate

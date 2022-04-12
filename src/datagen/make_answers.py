@@ -60,8 +60,6 @@ def generate_answers(types_to_qs):
     q_template = random.choice(types_to_qs['player_team'])
     question = q_template.replace('_', player['full_name'])
 
-    # For some players, ask for a specific year in the question
-
     # If player isn't active, switch up the question
     if status == 'Inactive':
       question = question.replace('is', 'was')
