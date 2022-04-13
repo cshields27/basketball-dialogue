@@ -9,17 +9,15 @@ from keras import metrics
 # This was created using Professor McMillan's guide here:
 # https://github.com/mcmillco/funcom/blob/master/models/attendgru.py
 
-class AttentionGRUModel:
+class AstAttentionGRUModel:
     def __init__(self, config):
-        
-        # override default tdatlen
-        config['tdatlen'] = 50
-        
         self.config = config
-        self.tdatvocabsize = config['tdatvocabsize']
-        self.comvocabsize = config['comvocabsize']
-        self.datlen = config['tdatlen']
-        self.comlen = config['comlen']
+        self.c_vocabsize = config['c_vocabsize']
+        self.q_vocabsize = config['q_vocabsize']
+        self.a_vocabsize = config['a_vocabsize']
+        self.clen = config['clen']
+        self.qlen = config['qlen']
+        self.alen = config['alen']
         
         self.embdims = 100
         self.recdims = 256
@@ -28,33 +26,42 @@ class AttentionGRUModel:
         self.config['num_output'] = 1
 
     def create_model(self):        
-        dat_input = Input(shape=(self.datlen,))
-        com_input = Input(shape=(self.comlen,))
-
-        ee = Embedding(output_dim=self.embdims, input_dim=self.tdatvocabsize, mask_zero=False)(dat_input)
-  
-        enc = LSTM(self.recdims, return_state=True, return_sequences=True)
-        encout, state_h = enc(ee)
+        a_input = Input(shape=(self.alen,))
+        q_input = Input(shape=(self.qlen,))
+        c_input = Input(shape=(self.clen,))
         
-        de = Embedding(output_dim=self.embdims, input_dim=self.comvocabsize, mask_zero=False)(com_input)
+        ee = Embedding(output_dim=self.embdims, input_dim=self.avocabsize, mask_zero=False)(a_input)
+        se = Embedding(output_dim=self.embdims, input_dim=self.cvocabsize, mask_zero=False)(c_input)
+
+        se_enc = LSTM(self.recdims, return_state=True, return_sequences=True)
+        seout, state_sml = se_enc(se)
+
+        enc = LSTM(self.recdims, return_state=True, return_sequences=True)
+        encout, state_h = enc(ee, initial_state=state_sml)
+        
+        de = Embedding(output_dim=self.embdims, input_dim=self.qvocabsize, mask_zero=False)(q_input)
         dec = LSTM(self.recdims, return_sequences=True)
         decout = dec(de, initial_state=state_h)
-        
+
         attn = dot([decout, encout], axes=[2, 2])
         attn = Activation('softmax')(attn)
+        context = dot([attn, encout], axes=[2, 1])
 
-        context = dot([attn, encout], axes=[2,1])
-        
-        context = concatenate([context, decout])
+        ast_attn = dot([decout, seout], axes=[2, 2])
+        ast_attn = Activation('softmax')(ast_attn)
+        ast_context = dot([ast_attn, seout], axes=[2, 1])
 
-        out = TimeDistributed(Dense(self.recdims, activation="tanh"))(context)
+        context = concatenate([context, decout, ast_context])
+
+        out = TimeDistributed(Dense(self.recdims, activation="relu"))(context)
+
         out = Flatten()(out)
         out = Dense(self.comvocabsize, activation="softmax")(out)
-
-        model = Model(inputs=[dat_input, com_input], outputs=out)
         
+        model = Model(inputs=[a_input, q_input, c_input], outputs=out)
+
         if self.config['multigpu']:
             model = keras.utils.multi_gpu_model(model, gpus=2)
-
+        
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         return self.config, model
