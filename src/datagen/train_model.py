@@ -5,6 +5,7 @@ import re
 import random
 import sys
 import numpy as np
+from attention_model import AttentionGRUModel
 from collections import defaultdict
 from keras.preprocessing.text import Tokenizer
 from sklearn.naive_bayes import MultinomialNB
@@ -50,7 +51,7 @@ def train_main():
       except ValueError as v:
         pass # line was blank
 
-  # Tokenize
+  # Split
   random.shuffle(dat)
   context, answer, question = zip(*dat)
 
@@ -70,34 +71,24 @@ def train_main():
   valquestion = question[trainlen:trainlen+vallen]
   testquestion = question[trainlen+vallen:]
 
-  exit() # works until here
+  # Tokenize
+  question_tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
+  question_tokenizer.fit_on_texts(trainquestion)
 
-  tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
-  tokenizer.fit_on_texts(traincontext)
-  word_index = tokenizer.word_index
+  answer_tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
+  answer_tokenizer.fit_on_texts(trainanswer)
 
-  Xtrain = tokenizer.texts_to_sequences(traincontext)
-  Xval = tokenizer.texts_to_sequences(valcontext)
-  Xtest = tokenizer.texts_to_sequences(testcontext)
-
-  Ytrain = np.asarray(trainanswer)
-  Yval = np.asarray(valanswer)
-  Ytest = np.asarray(testanswer)
-
-  # Pad
-  text_maxlen = 200
-  vector_size = 100
-  batch_size = 100
-
-  Xtrain = pad_sequences(Xtrain, padding="post", truncating="post", maxlen=text_maxlen)
-  Xval = pad_sequences(Xval, padding="post", truncating="post", maxlen=text_maxlen)
-  Xtest = pad_sequences(Xtest, padding="post", truncating="post", maxlen=text_maxlen)
-
-  Ytrain = to_categorical(Ytrain)
-  Yval = to_categorical(Yval)
-  Ytest = to_categorical(Ytest)
+  context_tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
+  context_tokenizer.fit_on_texts(traincontext)
 
   # Train
+  # set up config and create model
+  exit()
+  mdl = AttentionGRUModel(config)
+  model = mdl.create_model()
+  exit() # works until here
+
+
   model = Sequential()
 
   # Using GLOVE word embeddings
