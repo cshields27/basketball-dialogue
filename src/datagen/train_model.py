@@ -23,6 +23,10 @@ CONTEXTS_PATH = '../../data/contexts.test'
 ANSWERS_PATH = '../../data/answers.test'
 QUESTIONS_PATH = '../../data/questions.test'
 
+C_TOK_PATH = '../../data/context_tok.json'
+A_TOK_PATH = '../../data/answer_tok.json'
+Q_TOK_PATH = '../../data/question_tok.json'
+
 np.random.seed(1337)
 random.seed(1337)
 tf.random.set_seed(1337)
@@ -80,6 +84,17 @@ def train_main():
 
   context_tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
   context_tokenizer.fit_on_texts(traincontext)
+
+  q_tokenizer_json = question_tokenizer.to_json()
+  a_tokenizer_json = answer_tokenizer.to_json()
+  c_tokenizer_json = context_tokenizer.to_json()
+
+  with open(Q_TOK_PATH, 'w') as f:
+    f.write(q_tokenizer_json)
+  with open(A_TOK_PATH, 'w') as f:
+    f.write(a_tokenizer_json)
+  with open(C_TOK_PATH, 'w') as f:
+    f.write(c_tokenizer_json)
 
   # Train
   # set up config and create model
