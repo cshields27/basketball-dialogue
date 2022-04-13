@@ -28,7 +28,7 @@ tf.random.set_seed(1337)
 vocab_size = 10000
 
 def preprocess(line, entire = False):
-  ltext = line.replace('\n', ' ')   
+  ltext = line.replace('\n', ' ').strip()
   if entire:      
     ltext = re.sub('[^0-9a-zA-Z]+', ' ', ltext)        
     ltext = ltext.lower()
@@ -40,16 +40,15 @@ def train_main():
   with open(CONTEXTS_PATH, 'r')  as c_p, \
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
-
-    context = c_p.readline()
-    answer = a_p.readline()
-    question_line = q_p.readline()
-    try:
-      question = preprocess(question_line)
-      if context and answer and question:
-        dat.append((context, answer, question))
-    except ValueError as v:
-      pass # line was blank
+    for question_line in q_p.readlines():
+      context = preprocess(c_p.readline(), False)
+      answer = preprocess(a_p.readline(), False)
+      try:
+        question = preprocess(question_line, True)
+        if context and answer and question:
+          dat.append((context, answer, question))
+      except ValueError as v:
+        pass # line was blank
 
   # Tokenize
   random.shuffle(dat)
@@ -71,14 +70,15 @@ def train_main():
   valquestion = question[trainlen:trainlen+vallen]
   testquestion = question[trainlen+vallen:]
 
+  exit() # works until here
+
   tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
   tokenizer.fit_on_texts(traincontext)
   word_index = tokenizer.word_index
 
-'''
-  Xtrain = tokenizer.texts_to_sequences(traindat)
-  Xval = tokenizer.texts_to_sequences(valdat)
-  Xtest = tokenizer.texts_to_sequences(testdat)
+  Xtrain = tokenizer.texts_to_sequences(traincontext)
+  Xval = tokenizer.texts_to_sequences(valcontext)
+  Xtest = tokenizer.texts_to_sequences(testcontext)
 
   Ytrain = np.asarray(trainanswer)
   Yval = np.asarray(valanswer)
@@ -86,7 +86,6 @@ def train_main():
 
   # Pad
   text_maxlen = 200
-  num_classes = 14
   vector_size = 100
   batch_size = 100
 
@@ -94,9 +93,9 @@ def train_main():
   Xval = pad_sequences(Xval, padding="post", truncating="post", maxlen=text_maxlen)
   Xtest = pad_sequences(Xtest, padding="post", truncating="post", maxlen=text_maxlen)
 
-  Ytrain = to_categorical(Ytrain, num_classes=num_classes)
-  Yval = to_categorical(Yval, num_classes=num_classes)
-  Ytest = to_categorical(Ytest, num_classes=num_classes)
+  Ytrain = to_categorical(Ytrain)
+  Yval = to_categorical(Yval)
+  Ytest = to_categorical(Ytest)
 
   # Train
   model = Sequential()
@@ -163,7 +162,6 @@ def train_main():
   with open('eval_confusionmatrix.txt', 'w') as f:
     sys.stdout = f
     print(cm)
-    '''
 
 if __name__ == '__main__':
   train_main()
