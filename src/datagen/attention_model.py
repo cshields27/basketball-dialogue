@@ -32,7 +32,7 @@ class AttentionGRUModel:
         a_input = Input(shape=(self.alen,))
         c_input = Input(shape=(self.clen,))
         
-        ee = Embedding(output_dim=self.embdims, input_dim=self.qvocabsize, mask_zero=False)(q_input)
+        ee = Embedding(output_dim=self.embdims, input_dim=self.qvocabsize, mask_zero=False, weights=self.config['weights'])(q_input)
         se = Embedding(output_dim=self.embdims, input_dim=self.cvocabsize, mask_zero=False)(c_input)
 
         se_enc = CuDNNGRU(self.rnndims, return_state=True, return_sequences=True)
@@ -61,6 +61,7 @@ class AttentionGRUModel:
         out = Flatten()(out)
         out = Dense(self.avocabsize, activation="softmax")(out)
         
+        exit()
         model = Model(inputs=[q_input, a_input, c_input], outputs=out)
 
         if self.config['multigpu']:

@@ -96,26 +96,11 @@ def train_main():
   with open(C_TOK_PATH, 'w') as f:
     f.write(c_tokenizer_json)
 
-  # Train
-  # set up config and create model
-  config = dict()
-  config['q_vocabsize'] = vocab_size
-  config['c_vocabsize'] = vocab_size
-  config['a_vocabsize'] = vocab_size
-  config['qlen'] = len(trainquestion)
-  config['clen'] = len(traincontext)
-  config['alen'] = len(trainanswer)
-  config['batch_size'] = 200
-
-  mdl = AttentionGRUModel(config)
-  model = mdl.create_model()
-  exit() # works until here
-
-  model = Sequential()
-
   # Using GLOVE word embeddings
   # Source: https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html
   embeddings_index = {}
+  vector_size = 100
+  word_index = question_tokenizer.word_index
   with open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt')) as f:
     for line in f:
       values = line.split()
@@ -130,17 +115,22 @@ def train_main():
       # words not found in embedding index will be all-zeros.
       embedding_matrix[i] = embedding_vector
 
-  model.add(Embedding(vocab_size, vector_size, weights=[embedding_matrix], input_length=text_maxlen, trainable=False))
-  model.add(LSTM(vector_size, return_sequences=True))
-  model.add(Flatten())
-  model.add(Dropout(0.3))
-  model.add(Dense(num_classes, activation='softmax'))
+  # Train
+  # set up config and create model
+  config = dict()
+  config['q_vocabsize'] = vocab_size
+  config['c_vocabsize'] = vocab_size
+  config['a_vocabsize'] = vocab_size
+  config['qlen'] = len(trainquestion)
+  config['clen'] = len(traincontext)
+  config['alen'] = len(trainanswer)
+  config['batch_size'] = 5
+  config['weights'] = [embedding_matrix]
 
-  model.summary()
+  mdl = AttentionGRUModel(config)
+  model = mdl.create_model()
 
-  model.compile(loss='categorical_crossentropy',
-                optimizer='adam',
-                metrics=['accuracy'])
+  exit()
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
