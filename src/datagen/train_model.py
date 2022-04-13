@@ -90,7 +90,7 @@ def train_main():
   config['qlen'] = len(trainquestion)
   config['clen'] = len(traincontext)
   config['alen'] = len(trainanswer)
-  config['batch_size'] = batch_size
+  config['batch_size'] = 200
 
   mdl = AttentionGRUModel(config)
   model = mdl.create_model()
