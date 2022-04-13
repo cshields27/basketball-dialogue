@@ -83,11 +83,18 @@ def train_main():
 
   # Train
   # set up config and create model
-  exit()
+  config = dict()
+  config['q_vocabsize'] = vocab_size
+  config['c_vocabsize'] = vocab_size
+  config['a_vocabsize'] = vocab_size
+  config['qlen'] = len(trainquestion)
+  config['clen'] = len(traincontext)
+  config['alen'] = len(trainanswer)
+  config['batch_size'] = batch_size
+
   mdl = AttentionGRUModel(config)
   model = mdl.create_model()
   exit() # works until here
-
 
   model = Sequential()
 
