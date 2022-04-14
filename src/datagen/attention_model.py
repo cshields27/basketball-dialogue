@@ -37,14 +37,17 @@ class AttentionGRUModel:
         ee = Embedding(output_dim=self.embdims, input_dim=self.qvocabsize, mask_zero=False, weights=self.config['weights'])(q_input)
         se = Embedding(output_dim=self.embdims, input_dim=self.cvocabsize, mask_zero=False)(c_input)
 
-        se_enc = CuDNNGRU(self.rnndims, return_state=True, return_sequences=True)
+        se_enc = GRU(self.rnndims, return_state=True, return_sequences=True)
+        #se_enc = CuDNNGRU(self.rnndims, return_state=True, return_sequences=True) # for GPU ?
         seout, state_sml = se_enc(se)
 
-        enc = CuDNNGRU(self.rnndims, return_state=True, return_sequences=True)
+        enc = GRU(self.rnndims, return_state=True, return_sequences=True)
+        #enc = CuDNNGRU(self.rnndims, return_state=True, return_sequences=True) # for GPU ?
         encout, state_h = enc(ee, initial_state=state_sml)
         
         de = Embedding(output_dim=self.embdims, input_dim=self.avocabsize, mask_zero=False)(a_input)
-        dec = CuDNNGRU(self.rnndims, return_sequences=True)
+        dec = GRU(self.rnndims, return_sequences=True)
+        # dec = CuDNNGRU(self.rnndims, return_sequences=True) # for GPU ?
         decout = dec(de, initial_state=state_h)
 
         attn = dot([decout, encout], axes=[2, 2])

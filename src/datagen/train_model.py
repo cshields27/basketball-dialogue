@@ -173,7 +173,7 @@ def train_main():
 
   history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
                       batch_size=batch_size,
-                      epochs=38,
+                      epochs=10,
                       verbose=1,
                       validation_data=([valquestion, valanswer, valcontext], valanswer))
 
