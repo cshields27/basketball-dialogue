@@ -7,8 +7,10 @@ import keras.utils
 import tensorflow as tf
 from keras import metrics
 
-# This was created using Professor McMillan's guide here:
-# https://github.com/mcmillco/funcom/blob/master/models/attendgru.py
+'''
+This was created using Professor McMillan's guide here:
+https://github.com/mcmillco/funcom/blob/master/models/attendgru.py
+'''
 
 class AttentionGRUModel:
     def __init__(self, config):
@@ -21,7 +23,7 @@ class AttentionGRUModel:
         self.alen = config['alen']
         
         self.embdims = 100
-        self.recdims = 256
+        self.recdims = 100
         self.rnndims = 100
 
         self.config['num_input'] = 3

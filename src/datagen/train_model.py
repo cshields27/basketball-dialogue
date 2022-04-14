@@ -1,3 +1,10 @@
+'''
+Trains model used to generate answers
+
+Run to activate venv:
+source /escnfs/home/cmc/public/venv/bin/activate
+'''
+
 import io
 import os
 import json
@@ -121,16 +128,14 @@ def train_main():
   config['q_vocabsize'] = vocab_size
   config['c_vocabsize'] = vocab_size
   config['a_vocabsize'] = vocab_size
-  config['qlen'] = len(trainquestion)
-  config['clen'] = len(traincontext)
-  config['alen'] = len(trainanswer)
-  config['batch_size'] = 5
+  config['qlen'] = 10
+  config['clen'] = 1000
+  config['alen'] = 10 # answers won't be very long
+  config['batch_size'] = 100
   config['weights'] = [embedding_matrix]
 
   mdl = AttentionGRUModel(config)
   model = mdl.create_model()
-
-  exit()
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
