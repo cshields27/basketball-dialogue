@@ -33,6 +33,7 @@ QUESTIONS_PATH = '../../data/questions.test'
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
 Q_TOK_PATH = '../../data/question_tok.json'
+MODEL_PATH = '../../data/model.h5'
 
 np.random.seed(1337)
 random.seed(1337)
@@ -42,8 +43,10 @@ vocab_size = 10000
 def preprocess(line, entire = False):
   ltext = line.replace('\n', ' ').strip()
   if entire:      
-    ltext = re.sub('[^0-9a-zA-Z]+', ' ', ltext)        
+    ltext = re.sub('[^0-9a-zA-Z]+', ' ', ltext)
     ltext = ltext.lower()
+  else:
+    ltext = re.sub(",:'", ' ', ltext)
   return ltext
 
 def train_main():
@@ -53,9 +56,9 @@ def train_main():
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
     for question_line in q_p.readlines():
-      context = preprocess(c_p.readline(), False)
-      answer = preprocess(a_p.readline(), False)
       try:
+        context = preprocess(c_p.readline(), False)
+        answer = preprocess(a_p.readline(), False)
         question = preprocess(question_line, True)
         if context and answer and question:
           dat.append((context, answer, question))
@@ -69,6 +72,10 @@ def train_main():
   trainlen = int(len(answer) * 0.85)
   vallen = int(len(answer) * 0.05)
   testlen = int(len(answer) * 0.10)
+  
+  trainquestion = question[:trainlen]
+  valquestion = question[trainlen:trainlen+vallen]
+  testquestion = question[trainlen+vallen:]
 
   traincontext = context[:trainlen]
   valcontext = context[trainlen:trainlen+vallen]
@@ -78,11 +85,7 @@ def train_main():
   valanswer = answer[trainlen:trainlen+vallen]
   testanswer = answer[trainlen+vallen:]
 
-  trainquestion = question[:trainlen]
-  valquestion = question[trainlen:trainlen+vallen]
-  testquestion = question[trainlen+vallen:]
-
-  # Tokenize
+  # Set up tokenizers
   question_tokenizer = Tokenizer(lower=False, num_words=vocab_size, oov_token="UNK")
   question_tokenizer.fit_on_texts(trainquestion)
 
@@ -122,8 +125,8 @@ def train_main():
       # words not found in embedding index will be all-zeros.
       embedding_matrix[i] = embedding_vector
 
-  # Train
-  # set up config and create model
+  # Tokenize and pad everything
+  # set up config
   config = dict()
   config['q_vocabsize'] = vocab_size
   config['c_vocabsize'] = vocab_size
@@ -131,45 +134,57 @@ def train_main():
   config['qlen'] = 10
   config['clen'] = 1000
   config['alen'] = 10 # answers won't be very long
-  config['batch_size'] = 100
+  batch_size = 100
+  config['batch_size'] = batch_size
   config['weights'] = [embedding_matrix]
 
+  trainquestion = question_tokenizer.texts_to_sequences(trainquestion)
+  valquestion = question_tokenizer.texts_to_sequences(valquestion)
+  testquestion = question_tokenizer.texts_to_sequences(testquestion)
+
+  trainanswer = answer_tokenizer.texts_to_sequences(trainanswer)
+  valanswer = answer_tokenizer.texts_to_sequences(valanswer)
+  testanswer = answer_tokenizer.texts_to_sequences(testanswer)
+
+  traincontext = context_tokenizer.texts_to_sequences(traincontext)
+  valcontext = context_tokenizer.texts_to_sequences(valcontext)
+  testcontext = context_tokenizer.texts_to_sequences(testcontext)
+
+  trainquestion = pad_sequences(trainquestion, padding="post", truncating="post", maxlen=config['qlen'])
+  valquestion = pad_sequences(valquestion, padding="post", truncating="post", maxlen=config['qlen'])
+  testquestion = pad_sequences(testquestion, padding="post", truncating="post", maxlen=config['qlen'])
+
+  trainanswer = pad_sequences(trainanswer, padding="post", truncating="post", maxlen=config['alen'])
+  valanswer = pad_sequences(valanswer, padding="post", truncating="post", maxlen=config['alen'])
+  testanswer = pad_sequences(testanswer, padding="post", truncating="post", maxlen=config['alen'])
+
+  traincontext = pad_sequences(traincontext, padding="post", truncating="post", maxlen=config['clen'])
+  valcontext = pad_sequences(valcontext, padding="post", truncating="post", maxlen=config['clen'])
+  testcontext = pad_sequences(testcontext, padding="post", truncating="post", maxlen=config['clen'])
+
+  # Train
+
+  # create model
   mdl = AttentionGRUModel(config)
   model = mdl.create_model()
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
-  history = model.fit(Xtrain, Ytrain,
+  history = model.fit([trainquestion, trainanswer, traincontext],
                       batch_size=batch_size,
                       epochs=38,
                       verbose=1,
-                      validation_data=(Xval, Yval))
-
-  # Save tokenizer
-  tokenizer_json = tokenizer.to_json()
-  with io.open('qasys/toks/qa_tok.json', 'w', encoding='utf-8') as f:
-      f.write(tokenizer_json)
+                      validation_data=[valquestion, valanswer, valcontext])
 
   # Save model
-  model.save('qasys/data/qa_g_lstm.h5')
-
-  if MODE == 1:
-    exit()
-
-  Ypred = model.predict(Xtest)
+  model.save(MODEL_PATH)
+  Ypred = model.predict((testcontext, testquestion, testanswer))
   Ypred = np.argmax(Ypred, axis=1)
   Ytest = np.argmax(Ytest, axis=1)
 
   with open('eval_report.txt', 'w') as f:
     sys.stdout = f
-    print(metrics.classification_report(Ytest, Ypred, target_names=type_descs))
-
-  cm = metrics.confusion_matrix(Ytest, Ypred).transpose()
-  np.set_printoptions(linewidth=500)
-  np.set_printoptions(threshold=np.inf)
-  with open('eval_confusionmatrix.txt', 'w') as f:
-    sys.stdout = f
-    print(cm)
+    print(metrics.classification_report(Ytest, Ypred))
 
 if __name__ == '__main__':
   train_main()

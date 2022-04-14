@@ -62,12 +62,11 @@ class AttentionGRUModel:
 
         out = Flatten()(out)
         out = Dense(self.avocabsize, activation="softmax")(out)
-        
-        exit()
+
         model = Model(inputs=[q_input, a_input, c_input], outputs=out)
 
-        if self.config['multigpu']:
-            model = keras.utils.multi_gpu_model(model, gpus=2)
+        '''if self.config['multigpu']:
+            model = keras.utils.multi_gpu_model(model, gpus=2)'''
         
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return self.config, model
+        return model
