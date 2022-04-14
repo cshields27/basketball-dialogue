@@ -69,7 +69,8 @@ def load_model():
   model = tf.keras.models.load_model(MODEL_PATH)
   return model
 
-def prediction(context, contexts_tok, answers_tok, tokenized_question, model):
+def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model):
+  # note - we might need to add spaces before/after the <s> so that they get picked up when tokenizing; right now there are no spaces
   context_tokenization = contexts_tok.texts_to_sequences([context])
   context_tokenization = pad_sequences(context_tokenization, padding="post", truncating="post", maxlen=1000)
   prediction = answers_tok.texts_to_sequences(['<s>'])
@@ -99,7 +100,7 @@ def main():
   contexts_tok, answers_tok, questions_tok = load_tokenizers()
   tokenized_question = tok_question(questions_tok, preprocess(question, True))
   model = load_model()
-  print(prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
+  print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
     
 if __name__ == '__main__':
   main()
