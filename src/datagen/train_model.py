@@ -167,14 +167,15 @@ def train_main():
   # create model
   mdl = AttentionGRUModel(config)
   model = mdl.create_model()
+  print(model.summary())
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
-  history = model.fit([trainquestion, trainanswer, traincontext],
+  history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
                       batch_size=batch_size,
                       epochs=38,
                       verbose=1,
-                      validation_data=[valquestion, valanswer, valcontext])
+                      validation_data=([valquestion, valanswer, valcontext], valanswer))
 
   # Save model
   model.save(MODEL_PATH)
@@ -182,9 +183,7 @@ def train_main():
   Ypred = np.argmax(Ypred, axis=1)
   Ytest = np.argmax(Ytest, axis=1)
 
-  with open('eval_report.txt', 'w') as f:
-    sys.stdout = f
-    print(metrics.classification_report(Ytest, Ypred))
+  print(metrics.classification_report(Ytest, Ypred))
 
 if __name__ == '__main__':
   train_main()
