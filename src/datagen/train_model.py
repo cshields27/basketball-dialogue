@@ -46,7 +46,10 @@ def preprocess(line, entire = False):
     ltext = re.sub('[^0-9a-zA-Z]+', ' ', ltext)
     ltext = ltext.lower()
   else:
-    ltext = re.sub(",:'", ' ', ltext)
+    ltext = ltext.replace('\n', ' ')
+    ltext = ltext.replace(',', '')
+    ltext = ltext.replace(':', '')
+    ltext = ltext.replace("'", '')
   return ltext
 
 def train_main():
@@ -173,7 +176,7 @@ def train_main():
 
   history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
                       batch_size=batch_size,
-                      epochs=10,
+                      epochs=5,
                       verbose=1,
                       validation_data=([valquestion, valanswer, valcontext], valanswer))
 
