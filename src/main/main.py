@@ -20,12 +20,7 @@ Q_TOK_PATH = '../../data/question_tok.json'
 MODEL_PATH = '../../data/model.h5'
 
 def read_question():
-  try:
-    question = str(sys.argv[2])
-  except:
-    print("No question found: use -q flag before question")
-    exit()
-  return question
+  return input('- ')
 
 def preprocess(line, entire = False):
   ltext = line.replace('\n', ' ').strip()
@@ -44,20 +39,23 @@ def get_context(path):
   with open(path) as f:
     for line in f.readlines():
       return preprocess(line)
-  return lines
+  return lines[10163]
 
 def load_tokenizers():
   with open(C_TOK_PATH) as f:
     contexts_data = f.read()
     contexts_tok = tokenizer_from_json(contexts_data)
+    contexts_tok.filters = ''
 
   with open(A_TOK_PATH) as f:
     answers_data = f.read()
     answers_tok = tokenizer_from_json(answers_data)
+    answers_tok.filters = ''
 
   with open(Q_TOK_PATH) as f:
     questions_data = f.read()
     questions_tok = tokenizer_from_json(questions_data)
+    questions_tok.filters = ''
 
   return contexts_tok, answers_tok, questions_tok
 
@@ -70,7 +68,6 @@ def load_model():
   return model
 
 def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model):
-  # note - we might need to add spaces before/after the <s> so that they get picked up when tokenizing; right now there are no spaces
   context_tokenization = contexts_tok.texts_to_sequences([context])
   context_tokenization = pad_sequences(context_tokenization, padding="post", truncating="post", maxlen=1000)
   prediction = answers_tok.texts_to_sequences(['<s>'])
@@ -80,12 +77,12 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
   word_num = 1
   while True:
     out = model.predict((np.asarray(question_tokenization), np.asarray(prediction), np.asarray(context_tokenization)))
+    print(prediction)
     predict_index = np.argmax(out[0]) # find the max value in the output prediction
     prediction[0][word_num] = predict_index # add the max index to our prediction
     next_word = answers_tok.sequences_to_texts([[predict_index]])
-    if next_word == ['</s>']: # exit condition
+    if next_word == ['</s>'] or word_num == 9: # exit condition
       return answers_tok.sequences_to_texts(prediction)
-    print(answers_tok.sequences_to_texts(prediction))
     word_num += 1
 
 def detokenize_display(answers_tok, tokenized_answer):
@@ -96,11 +93,14 @@ def detokenize_display(answers_tok, tokenized_answer):
 def main():
   print('Welcome to the IDS Spring 2022 NBA Dialogue System version 1.0')
   print('Getting things ready...')
-  question = read_question()
   contexts_tok, answers_tok, questions_tok = load_tokenizers()
-  tokenized_question = tok_question(questions_tok, preprocess(question, True))
   model = load_model()
-  print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
+  print('Ok, you can begin asking questions now!')
+  question = read_question()
+  while question:
+    tokenized_question = tok_question(questions_tok, preprocess(question, True))
+    print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
+    question = read_question()
     
 if __name__ == '__main__':
   main()
