@@ -50,8 +50,8 @@ def generate_qa(types_to_qs):
         question = question.replace('does', 'did')
       
       answer = city + ' ' + team
-      f_q.write('{}\n'.format(question))
-      f_a.write('{}\n'.format(answer))
+      f_q.write('<s> {} </s>\n'.format(question))
+      f_a.write('<s> {} </s>\n'.format(answer))
 
 def main():
   types_to_qs = generate_questions()
