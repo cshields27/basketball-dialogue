@@ -58,7 +58,7 @@ def generate_contexts():
     player['info'] = player_info
     player['career_data'] = career_data
 
-    f.write('<s> {} </s>\n'.format(str(player)))
+    f.write('STARTTAG> {} ENDTAG\n'.format(str(player)))
 
     name = player_info['DISPLAY_FIRST_LAST']
 
