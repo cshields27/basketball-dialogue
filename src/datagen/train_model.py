@@ -26,9 +26,9 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
 GLOVE_DIR = '../../data'
-CONTEXTS_PATH = '../../data/contexts.debug'
-ANSWERS_PATH = '../../data/answers.debug'
-QUESTIONS_PATH = '../../data/questions.debug'
+CONTEXTS_PATH = '../../data/contexts.test'
+ANSWERS_PATH = '../../data/answers.test'
+QUESTIONS_PATH = '../../data/questions.test'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -211,6 +211,15 @@ def train_main():
   trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
       [trainquestion, traincontext, valquestion, valcontext], config['alen'])
 
+  # Convert to np arrays
+  trainquestion = np.array(trainquestion)
+  train_answers = np.array(train_answers)
+  traincontext = np.array(traincontext)
+
+  valquestion = np.array(valquestion)
+  val_answers = np.array(val_answers)
+  valcontext = np.array(valcontext)
+
   train_in = [trainquestion, train_answers, traincontext]
   train_out = train_answers
   val_in = [valquestion, val_answers, valcontext]
@@ -218,21 +227,41 @@ def train_main():
 
   # DEBUG: 
   # all of these are as expected
-  print(len(trainquestion)) # 80 examples * 10/ examples -> 80
-  print(len(traincontext)) # 80
-  print(len(train_answers)) # 80
+  # print(len(trainquestion)) # 80 examples * 10/ examples -> 80
+  # print(len(traincontext)) # 80
+  # print(len(train_answers)) # 80
 
-  print(len(valquestion)) # 10
-  print(len(valcontext)) # 10
-  print(len(val_answers)) # 10
+  # print(len(valquestion)) # 10
+  # print(len(valcontext)) # 10
+  # print(len(val_answers)) # 10
   
-  print(len(trainquestion[0])) # 10
-  print(len(traincontext[0])) # 1000
-  print(len(train_answers[0])) # 10
+  # print(len(trainquestion[0])) # 10
+  # print(len(traincontext[0])) # 1000
+  # print(len(train_answers[0])) # 10
   
-  print(len(valquestion[0])) # 10
-  print(len(valcontext[0])) # 1000
-  print(len(val_answers[0])) # 10
+  # print(len(valquestion[0])) # 10
+  # print(len(valcontext[0])) # 1000
+  # print(len(val_answers[0])) # 10
+
+  # print(type(trainquestion))
+  # print(type(train_answers))
+  # print(type(traincontext))
+
+  # print(type(valquestion))
+  # print(type(val_answers))
+  # print(type(valcontext))
+
+  # for i in range(10):
+  #   print(trainquestion[i])
+  # for i in range(10):
+  #   print(train_answers[i])
+  # for i in range(10):
+  #   print(traincontext[i])
+
+  # print(valquestion)
+  # print(val_answers)
+  # print(valcontext)
+
 
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,

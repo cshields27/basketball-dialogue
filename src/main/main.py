@@ -12,7 +12,7 @@ import sys
 from keras.preprocessing.text import tokenizer_from_json
 from keras.preprocessing.sequence import pad_sequences
 
-CONTEXTS_PATH = '../../data/contexts.test'
+CONTEXTS_PATH = '../../data/contexts.debug'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -58,7 +58,7 @@ def load_tokenizers():
   return contexts_tok, answers_tok, questions_tok
 
 def tok_question(questions_tok, question):
-  question = f'<s> {question} </s>'
+  question = f'STARTTAG {question} ENDTAG'
   tokenized_question = questions_tok.texts_to_sequences([question])
   tokenized_question = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
   return tokenized_question
@@ -70,7 +70,7 @@ def load_model():
 def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model):
   context_tokenization = contexts_tok.texts_to_sequences([context])
   context_tokenization = pad_sequences(context_tokenization, padding="post", truncating="post", maxlen=1000)
-  prediction = answers_tok.texts_to_sequences(['<s>'])
+  prediction = answers_tok.texts_to_sequences(['STARTTAG'])
   prediction = pad_sequences(prediction, padding="post", truncating="post", maxlen=10)
   question_tokenization = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
   
