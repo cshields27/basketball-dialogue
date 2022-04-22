@@ -207,29 +207,40 @@ def train_main():
   train_answers = create_sequences_of_answers(trainanswer, config['alen'])
   val_answers = create_sequences_of_answers(valanswer, config['alen'])
 
-  # ensure all arrays have the same length
+  # ensure all arrays have the same length by repeating question and context alen times
   trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
       [trainquestion, traincontext, valquestion, valcontext], config['alen'])
 
-  train_in = tf.stack([trainquestion, train_answers, traincontext])
-  train_out = tf.stack(train_answers)
-  val_in = tf.stack([valquestion, val_answers, valcontext])
-  val_out = tf.stack(val_answers)
+  train_in = [trainquestion, train_answers, traincontext]
+  train_out = train_answers
+  val_in = [valquestion, val_answers, valcontext]
+  val_out = val_answers
+
+  # DEBUG: 
+  # all of these are as expected
+  print(len(trainquestion)) # 80 examples * 10/ examples -> 80
+  print(len(traincontext)) # 80
+  print(len(train_answers)) # 80
+
+  print(len(valquestion)) # 10
+  print(len(valcontext)) # 10
+  print(len(val_answers)) # 10
+  
+  print(len(trainquestion[0])) # 10
+  print(len(traincontext[0])) # 1000
+  print(len(train_answers[0])) # 10
+  
+  print(len(valquestion[0])) # 10
+  print(len(valcontext[0])) # 1000
+  print(len(val_answers[0])) # 10
 
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
                       epochs=5,
                       verbose=1,
                       validation_data=(val_in, val_out))
-  '''
-  print(len(trainquestion))
-  print(len(traincontext))
-  print(len(train_answers))
-  
-  print(len(valquestion))
-  print(len(valcontext))
-  print(len(val_answers))
 
+  '''
   history = model.fit([trainquestion, train_answers, traincontext], train_answers,
                       batch_size=batch_size,
                       epochs=5,
