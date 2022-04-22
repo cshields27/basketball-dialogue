@@ -77,15 +77,15 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
 
   word_num = 1
   while True:
-    print(question_tokenization)
-    print(prediction)
-    print(context_tokenization)
+    #print(question_tokenization)
+    #print(prediction)
+    #print(context_tokenization)
     out = model.predict((np.asarray(question_tokenization), np.asarray(prediction), np.asarray(context_tokenization)))
     print(prediction)
     predict_index = np.argmax(out[0]) # find the max value in the output prediction
     prediction[0][word_num] = predict_index # add the max index to our prediction
     next_word = answers_tok.sequences_to_texts([[predict_index]])
-    if next_word == ['</s>'] or word_num == 9: # exit condition
+    if next_word == ['ENDTAG'] or word_num == 9: # exit condition
       return answers_tok.sequences_to_texts(prediction)
     word_num += 1
 
@@ -103,8 +103,6 @@ def main():
   question = read_question()
   while question:
     tokenized_question = tok_question(questions_tok, preprocess(question, True))
-    #print(tokenized_question)
-    #print(question_tokenizer.index_word[323])
     print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
     question = read_question()
     

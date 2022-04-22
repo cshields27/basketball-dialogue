@@ -173,6 +173,7 @@ def train_main():
   print(model.summary())
 
   K.set_value(model.optimizer.learning_rate, 0.001)
+
   history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
                       batch_size=batch_size,
                       epochs=5,
