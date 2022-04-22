@@ -26,9 +26,9 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
 GLOVE_DIR = '../../data'
-CONTEXTS_PATH = '../../data/contexts.test'
-ANSWERS_PATH = '../../data/answers.test'
-QUESTIONS_PATH = '../../data/questions.test'
+CONTEXTS_PATH = '../../data/contexts.debug'
+ANSWERS_PATH = '../../data/answers.debug'
+QUESTIONS_PATH = '../../data/questions.debug'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -72,8 +72,8 @@ def train_main():
   random.shuffle(dat)
   context, answer, question = zip(*dat)
 
-  trainlen = int(len(answer) * 0.85)
-  vallen = int(len(answer) * 0.05)
+  trainlen = int(len(answer) * 0.80)
+  vallen = int(len(answer) * 0.10)
   testlen = int(len(answer) * 0.10)
   
   trainquestion = question[:trainlen]
@@ -173,7 +173,6 @@ def train_main():
   print(model.summary())
 
   K.set_value(model.optimizer.learning_rate, 0.001)
-
   history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
                       batch_size=batch_size,
                       epochs=5,
@@ -182,6 +181,7 @@ def train_main():
 
   # Save model
   model.save(MODEL_PATH)
+  exit()
   Ypred = model.predict((testcontext, testquestion, testanswer))
   Ypred = np.argmax(Ypred, axis=1)
   Ytest = np.argmax(Ytest, axis=1)

@@ -45,22 +45,22 @@ def load_tokenizers():
   with open(C_TOK_PATH) as f:
     contexts_data = f.read()
     contexts_tok = tokenizer_from_json(contexts_data)
-    contexts_tok.filters = ''
 
   with open(A_TOK_PATH) as f:
     answers_data = f.read()
     answers_tok = tokenizer_from_json(answers_data)
-    answers_tok.filters = ''
 
   with open(Q_TOK_PATH) as f:
     questions_data = f.read()
     questions_tok = tokenizer_from_json(questions_data)
-    questions_tok.filters = ''
+    #questions_tok.filters = ''
 
   return contexts_tok, answers_tok, questions_tok
 
 def tok_question(questions_tok, question):
+  question = f'<s> {question} </s>'
   tokenized_question = questions_tok.texts_to_sequences([question])
+  tokenized_question = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
   return tokenized_question
 
 def load_model():
@@ -73,9 +73,13 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
   prediction = answers_tok.texts_to_sequences(['<s>'])
   prediction = pad_sequences(prediction, padding="post", truncating="post", maxlen=10)
   question_tokenization = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
+  
 
   word_num = 1
   while True:
+    print(question_tokenization)
+    print(prediction)
+    print(context_tokenization)
     out = model.predict((np.asarray(question_tokenization), np.asarray(prediction), np.asarray(context_tokenization)))
     print(prediction)
     predict_index = np.argmax(out[0]) # find the max value in the output prediction
@@ -99,6 +103,8 @@ def main():
   question = read_question()
   while question:
     tokenized_question = tok_question(questions_tok, preprocess(question, True))
+    #print(tokenized_question)
+    #print(question_tokenizer.index_word[323])
     print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
     question = read_question()
     
