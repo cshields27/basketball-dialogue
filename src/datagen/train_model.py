@@ -52,6 +52,35 @@ def preprocess(line, entire = False):
     ltext = ltext.replace("'", '')
   return ltext
 
+def create_sequences_of_answers(answers, length):
+  # train 'one word' at a time
+  all_answers = []
+  for answer in answers: # for each answer, pick the first i+1 vals, use zeroes for the rest
+    curr_seq = []
+    for i in range(length): # train for every answer length
+      curr_seq.append(answer[:i+1])
+
+    # add this set of partial answers to our aggregate list of data
+    curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=length) 
+    all_answers.extend(curr_seq)
+  return all_answers
+
+def duplicate_elements(sequences, multiple):
+  ''' modify each sequence to duplicate each element 'multiple' times '''
+  new_sequences = []
+  for seq in sequences:
+
+    new_seq = []
+    for val in seq:
+      duplicate = []
+      for _ in range(multiple):
+        duplicate.append(val)
+      new_seq.extend(duplicate)
+
+    new_sequences.append(new_seq)
+
+  return new_sequences
+
 def train_main():
   # Preprocess / Split
   dat = []
@@ -174,11 +203,39 @@ def train_main():
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
-  history = model.fit([trainquestion, trainanswer, traincontext], trainanswer,
+  # create repeated sequences for each answer to train 'one word' at a time
+  train_answers = create_sequences_of_answers(trainanswer, config['alen'])
+  val_answers = create_sequences_of_answers(valanswer, config['alen'])
+
+  # ensure all arrays have the same length
+  trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
+      [trainquestion, traincontext, valquestion, valcontext], config['alen'])
+
+  train_in = tf.stack([trainquestion, train_answers, traincontext])
+  train_out = tf.stack(train_answers)
+  val_in = tf.stack([valquestion, val_answers, valcontext])
+  val_out = tf.stack(val_answers)
+
+  history = model.fit(train_in, train_out,
                       batch_size=batch_size,
                       epochs=5,
                       verbose=1,
-                      validation_data=([valquestion, valanswer, valcontext], valanswer))
+                      validation_data=(val_in, val_out))
+  '''
+  print(len(trainquestion))
+  print(len(traincontext))
+  print(len(train_answers))
+  
+  print(len(valquestion))
+  print(len(valcontext))
+  print(len(val_answers))
+
+  history = model.fit([trainquestion, train_answers, traincontext], train_answers,
+                      batch_size=batch_size,
+                      epochs=5,
+                      verbose=1,
+                      validation_data=([valquestion, val_answers, valcontext], val_answers))
+  '''
 
   # Save model
   model.save(MODEL_PATH)
