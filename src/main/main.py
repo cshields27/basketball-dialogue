@@ -59,6 +59,7 @@ def load_tokenizers():
 
 def tok_question(questions_tok, question):
   question = f'STARTTAG {question} ENDTAG'
+  question = preprocess(question, True)
   tokenized_question = questions_tok.texts_to_sequences([question])
   tokenized_question = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
   return tokenized_question
@@ -68,7 +69,7 @@ def load_model():
   return model
 
 def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model):
-  context_tokenization = contexts_tok.texts_to_sequences([context])
+  context_tokenization = contexts_tok.texts_to_sequences([preprocess(context)])
   context_tokenization = pad_sequences(context_tokenization, padding="post", truncating="post", maxlen=1000)
   prediction = answers_tok.texts_to_sequences(['STARTTAG'])
   prediction = pad_sequences(prediction, padding="post", truncating="post", maxlen=10)
@@ -77,14 +78,15 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
 
   word_num = 1
   while True:
-    #print(question_tokenization)
-    #print(prediction)
-    #print(context_tokenization)
+    print(f'{word_num}: Answer input:  {prediction[0]}')
+    print(f'{word_num}: Question:      {question_tokenization[0]}')
+    
     out = model.predict((np.asarray(question_tokenization), np.asarray(prediction), np.asarray(context_tokenization)))
-    print(prediction)
     predict_index = np.argmax(out[0]) # find the max value in the output prediction
     prediction[0][word_num] = predict_index # add the max index to our prediction
     next_word = answers_tok.sequences_to_texts([[predict_index]])
+
+    print(f'{word_num}: Answer output: {prediction[0]}\n')
     if next_word == ['ENDTAG'] or word_num == 9: # exit condition
       return answers_tok.sequences_to_texts(prediction)
     word_num += 1
@@ -102,7 +104,7 @@ def main():
   print('Ok, you can begin asking questions now!')
   question = read_question()
   while question:
-    tokenized_question = tok_question(questions_tok, preprocess(question, True))
+    tokenized_question = tok_question(questions_tok, question)
     print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
     question = read_question()
     

@@ -26,9 +26,9 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
 GLOVE_DIR = '../../data'
-CONTEXTS_PATH = '../../data/contexts.test'
-ANSWERS_PATH = '../../data/answers.test'
-QUESTIONS_PATH = '../../data/questions.test'
+CONTEXTS_PATH = '../../data/contexts.debug'
+ANSWERS_PATH = '../../data/answers.debug'
+QUESTIONS_PATH = '../../data/questions.debug'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -53,17 +53,23 @@ def preprocess(line, entire = False):
   return ltext
 
 def create_sequences_of_answers(answers, length):
-  # train 'one word' at a time
-  all_answers = []
-  for answer in answers: # for each answer, pick the first i+1 vals, use zeroes for the rest
+  ''' returns sequences of the input answers constructed one 'word' at a time '''
+  input_answers = []
+  output_answers = []
+  for answer in answers: # for each answer, loop over and pick the first i+1/i+2 vals, use zeroes for the rest
     curr_seq = []
+    next_seq = []
     for i in range(length): # train for every answer length
-      curr_seq.append(answer[:i+1])
+      curr_seq.append(answer[:i+1]) # current answer
+      next_seq.append(answer[:i+2]) # next answer
 
-    # add this set of partial answers to our aggregate list of data
-    curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=length) 
-    all_answers.extend(curr_seq)
-  return all_answers
+    # add set of partial answers to our aggregate list of data
+    curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=length)
+    input_answers.extend(curr_seq)
+    # add set of partial next answrs to our aggregate list 
+    next_seq = pad_sequences(next_seq, padding="post", truncating="post", maxlen=length) 
+    output_answers.extend(next_seq)
+  return input_answers, output_answers
 
 def duplicate_elements(sequences, multiple):
   ''' modify each sequence to duplicate each element 'multiple' times '''
@@ -87,7 +93,7 @@ def train_main():
   with open(CONTEXTS_PATH, 'r')  as c_p, \
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
-    for question_line in q_p.readlines():
+    for i, question_line in enumerate(q_p.readlines()):
       try:
         context = preprocess(c_p.readline(), False)
         answer = preprocess(a_p.readline(), False)
@@ -204,8 +210,8 @@ def train_main():
   K.set_value(model.optimizer.learning_rate, 0.001)
 
   # create repeated sequences for each answer to train 'one word' at a time
-  train_answers = create_sequences_of_answers(trainanswer, config['alen'])
-  val_answers = create_sequences_of_answers(valanswer, config['alen'])
+  train_answers, next_train_answers = create_sequences_of_answers(trainanswer, config['alen'])
+  val_answers, next_val_answers = create_sequences_of_answers(valanswer, config['alen'])
 
   # ensure all arrays have the same length by repeating question and context alen times
   trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
@@ -214,77 +220,33 @@ def train_main():
   # Convert to np arrays
   trainquestion = np.array(trainquestion)
   train_answers = np.array(train_answers)
+  next_train_answers = np.array(next_train_answers)
   traincontext = np.array(traincontext)
 
   valquestion = np.array(valquestion)
   val_answers = np.array(val_answers)
+  next_val_answers = np.array(next_val_answers)
   valcontext = np.array(valcontext)
 
   train_in = [trainquestion, train_answers, traincontext]
-  train_out = train_answers
+  train_out = next_train_answers
   val_in = [valquestion, val_answers, valcontext]
-  val_out = val_answers
+  val_out = next_val_answers
 
-  # DEBUG: 
-  # all of these are as expected
-  # print(len(trainquestion)) # 80 examples * 10/ examples -> 80
-  # print(len(traincontext)) # 80
-  # print(len(train_answers)) # 80
-
-  # print(len(valquestion)) # 10
-  # print(len(valcontext)) # 10
-  # print(len(val_answers)) # 10
-  
-  # print(len(trainquestion[0])) # 10
-  # print(len(traincontext[0])) # 1000
-  # print(len(train_answers[0])) # 10
-  
-  # print(len(valquestion[0])) # 10
-  # print(len(valcontext[0])) # 1000
-  # print(len(val_answers[0])) # 10
-
-  # print(type(trainquestion))
-  # print(type(train_answers))
-  # print(type(traincontext))
-
-  # print(type(valquestion))
-  # print(type(val_answers))
-  # print(type(valcontext))
-
-  # for i in range(10):
-  #   print(trainquestion[i])
-  # for i in range(10):
-  #   print(train_answers[i])
-  # for i in range(10):
-  #   print(traincontext[i])
-
-  # print(valquestion)
-  # print(val_answers)
-  # print(valcontext)
-
-
+  for i in range(len(next_train_answers)):
+    print(f'{i}: Answer input:  {train_answers[i]}')
+    print(f'{i}: Answer output: {next_train_answers[i]}')
+    print(f'{i}: Question:      {trainquestion[i]}\n')
+    #print(f'{i}: Context:       {traincontext[i]}\n')
+    
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
                       epochs=5,
                       verbose=1,
                       validation_data=(val_in, val_out))
 
-  '''
-  history = model.fit([trainquestion, train_answers, traincontext], train_answers,
-                      batch_size=batch_size,
-                      epochs=5,
-                      verbose=1,
-                      validation_data=([valquestion, val_answers, valcontext], val_answers))
-  '''
-
   # Save model
   model.save(MODEL_PATH)
-  exit()
-  Ypred = model.predict((testcontext, testquestion, testanswer))
-  Ypred = np.argmax(Ypred, axis=1)
-  Ytest = np.argmax(Ytest, axis=1)
-
-  print(metrics.classification_report(Ytest, Ypred))
 
 if __name__ == '__main__':
   train_main()
