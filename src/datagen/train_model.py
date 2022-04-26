@@ -25,10 +25,14 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
+DEBUG = False
+
 GLOVE_DIR = '../../data'
-CONTEXTS_PATH = '../../data/contexts.debug'
-ANSWERS_PATH = '../../data/answers.debug'
-QUESTIONS_PATH = '../../data/questions.debug'
+
+p_end = 'debug' if DEBUG else 'test'
+CONTEXTS_PATH = f'../../data/contexts.{p_end}'
+ANSWERS_PATH = f'../../data/answers.{p_end}'
+QUESTIONS_PATH = f'../../data/questions.{p_end}'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -87,6 +91,26 @@ def duplicate_elements(sequences, multiple):
 
   return new_sequences
 
+def remove_duplicate_quads(a, b, c, d, cycle_size):
+  ''' given 4 lists of lists, ensures no duplicate 4-tuples are present throughout each 'cycle_size' '''
+  res_a = []
+  res_b = []
+  res_c = []
+  res_d = []
+
+  for _ in range(cycle_size):
+    seen = set()
+    for i in range(len(a)):
+      quad = (tuple(a[i]), tuple(b[i]), tuple(c[i]), tuple(d[i]))
+      if quad not in seen:
+        res_a.append(a[i])
+        res_b.append(b[i])
+        res_c.append(c[i])
+        res_d.append(d[i])
+        seen.add(quad)
+
+  return res_a, res_b, res_c, res_d
+
 def train_main():
   # Preprocess / Split
   dat = []
@@ -94,6 +118,8 @@ def train_main():
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
     for i, question_line in enumerate(q_p.readlines()):
+      if i == 100:
+        break
       try:
         context = preprocess(c_p.readline(), False)
         answer = preprocess(a_p.readline(), False)
@@ -217,6 +243,10 @@ def train_main():
   trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
       [trainquestion, traincontext, valquestion, valcontext], config['alen'])
 
+  # remove duplicates
+  train_answers, trainquestion, traincontext, next_train_answers = remove_duplicate_quads(train_answers, trainquestion, traincontext, next_train_answers, len(trainquestion)//config['alen'])
+  val_answers, valquestion, valcontext, next_val_answers = remove_duplicate_quads(val_answers, valquestion, valcontext, next_val_answers, len(valquestion)//config['alen'])
+  
   # Convert to np arrays
   trainquestion = np.array(trainquestion)
   train_answers = np.array(train_answers)
@@ -233,12 +263,14 @@ def train_main():
   val_in = [valquestion, val_answers, valcontext]
   val_out = next_val_answers
 
-  for i in range(len(next_train_answers)):
-    print(f'{i}: Answer input:  {train_answers[i]}')
-    print(f'{i}: Answer output: {next_train_answers[i]}')
-    print(f'{i}: Question:      {trainquestion[i]}\n')
-    #print(f'{i}: Context:       {traincontext[i]}\n')
+  if DEBUG:
+    for i in range(len(next_train_answers)):
+      print(f'{i}: Answer input:  {train_answers[i]}')
+      print(f'{i}: Answer output: {next_train_answers[i]}')
+      print(f'{i}: Question:      {trainquestion[i]}\n')
+      #print(f'{i}: Context:       {traincontext[i]}\n')
     
+  print('Starting to train')
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
                       epochs=5,

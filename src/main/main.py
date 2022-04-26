@@ -12,7 +12,7 @@ import sys
 from keras.preprocessing.text import tokenizer_from_json
 from keras.preprocessing.sequence import pad_sequences
 
-CONTEXTS_PATH = '../../data/contexts.debug'
+CONTEXTS_PATH = '../../data/contexts.test'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -20,7 +20,7 @@ Q_TOK_PATH = '../../data/question_tok.json'
 MODEL_PATH = '../../data/model.h5'
 
 def read_question():
-  return input('- ')
+  return input('- ').split(',')
 
 def preprocess(line, entire = False):
   ltext = line.replace('\n', ' ').strip()
@@ -34,12 +34,10 @@ def preprocess(line, entire = False):
     ltext = ltext.replace("'", '')
   return ltext
 
-def get_context(path):
+def get_context(path, cline):
   lines = []
   with open(path) as f:
-    for line in f.readlines():
-      return preprocess(line)
-  return lines[10163]
+    return f.readlines()[cline]
 
 def load_tokenizers():
   with open(C_TOK_PATH) as f:
@@ -102,11 +100,13 @@ def main():
   contexts_tok, answers_tok, questions_tok = load_tokenizers()
   model = load_model()
   print('Ok, you can begin asking questions now!')
-  question = read_question()
+  question, cline = read_question()
+  cline = int(cline)
   while question:
     tokenized_question = tok_question(questions_tok, question)
-    print(get_prediction(get_context(CONTEXTS_PATH), contexts_tok, answers_tok, tokenized_question, model))
-    question = read_question()
+    print(get_prediction(get_context(CONTEXTS_PATH, cline), contexts_tok, answers_tok, tokenized_question, model))
+    question, cline = read_question()
+    cline = int(cline)
     
 if __name__ == '__main__':
   main()
