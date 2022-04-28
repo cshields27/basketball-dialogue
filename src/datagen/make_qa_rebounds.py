@@ -42,7 +42,7 @@ def generate_qa(types_to_qs):
     rpg = player_info['averages']['REB']
     season = player_info['averages']['TimeFrame']
 
-    for question_temp in types_to_qs['player_averages']:
+    for question_temp in types_to_qs['player_rebounds']:
       question = question_temp.replace('_', name)
 
       if status == 'Inactive':
