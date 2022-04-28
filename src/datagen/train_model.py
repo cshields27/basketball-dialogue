@@ -56,61 +56,6 @@ def preprocess(line, entire = False):
     ltext = ltext.replace("'", '')
   return ltext
 
-def create_sequences_of_answers(answers, length):
-  ''' returns sequences of the input answers constructed one 'word' at a time '''
-  input_answers = []
-  output_answers = []
-  for answer in answers: # for each answer, loop over and pick the first i+1/i+2 vals, use zeroes for the rest
-    curr_seq = []
-    next_seq = []
-    for i in range(length): # train for every answer length
-      curr_seq.append(answer[:i+1]) # current answer
-      next_seq.append(answer[:i+2]) # next answer
-
-    # add set of partial answers to our aggregate list of data
-    curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=length)
-    input_answers.extend(curr_seq)
-    # add set of partial next answrs to our aggregate list 
-    next_seq = pad_sequences(next_seq, padding="post", truncating="post", maxlen=length) 
-    output_answers.extend(next_seq)
-  return input_answers, output_answers
-
-def duplicate_elements(sequences, multiple):
-  ''' modify each sequence to duplicate each element 'multiple' times '''
-  new_sequences = []
-  for seq in sequences:
-
-    new_seq = []
-    for val in seq:
-      duplicate = []
-      for _ in range(multiple):
-        duplicate.append(val)
-      new_seq.extend(duplicate)
-
-    new_sequences.append(new_seq)
-
-  return new_sequences
-
-def remove_duplicate_quads(a, b, c, d, cycle_size):
-  ''' given 4 lists of lists, ensures no duplicate 4-tuples are present throughout each 'cycle_size' '''
-  res_a = []
-  res_b = []
-  res_c = []
-  res_d = []
-
-  for _ in range(cycle_size):
-    seen = set()
-    for i in range(len(a)):
-      quad = (tuple(a[i]), tuple(b[i]), tuple(c[i]), tuple(d[i]))
-      if quad not in seen:
-        res_a.append(a[i])
-        res_b.append(b[i])
-        res_c.append(c[i])
-        res_d.append(d[i])
-        seen.add(quad)
-
-  return res_a, res_b, res_c, res_d
-
 def create_training_tuples(answers, questions, contexts, max_answer_length, answers_tok):
   ''' returns context, answer, question lists, where the ith element of each list is used as a training point '''
   input_answers = []
