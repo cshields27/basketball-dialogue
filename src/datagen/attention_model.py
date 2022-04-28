@@ -64,7 +64,7 @@ class AttentionGRUModel:
         out = TimeDistributed(Dense(self.rnndims, activation="relu"))(context)
 
         out = Flatten()(out)
-        out = Dense(self.alen, activation="softmax")(out)
+        out = Dense(self.avocabsize, activation="softmax")(out)
 
         model = Model(inputs=[q_input, a_input, c_input], outputs=out)
 

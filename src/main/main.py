@@ -12,7 +12,7 @@ import sys
 from keras.preprocessing.text import tokenizer_from_json
 from keras.preprocessing.sequence import pad_sequences
 
-CONTEXTS_PATH = '../../data/contexts.debug'
+CONTEXTS_PATH = '../../data/contexts.test'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'

@@ -25,7 +25,7 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
-DEBUG = True
+DEBUG = False
 
 GLOVE_DIR = '../../data'
 
@@ -119,12 +119,15 @@ def create_training_tuples(answers, questions, contexts, max_answer_length, answ
   all_questions = []
   for i, answer in enumerate(answers): # for each answer, loop over and pick the first i+1/i+2 vals until an end tag is found, use zeroes for the rest
     curr_seq = []
-    next_seq = []
+    next_answer = 0
     for j in range(max_answer_length): # train for every answer length
       curr_seq.append(answer[:j+1]) # current answer
-      next_seq.append(answer[:j+2]) # next answer
+      next_answer = answer[j+1] # next answer
       all_contexts.append(contexts[i]) # constant context
       all_questions.append(questions[i]) # contant question
+      next_seq = [0] * vocab_size
+      next_seq[next_answer] = 1
+      output_answers.append(next_seq)
 
       next_word_tokenization = answer[j]
       if answers_tok.sequences_to_texts([[next_word_tokenization]]) == ['ENDTAG']:
@@ -134,8 +137,6 @@ def create_training_tuples(answers, questions, contexts, max_answer_length, answ
     curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=max_answer_length)
     input_answers.extend(curr_seq)
     # add set of partial next answrs to our aggregate list 
-    next_seq = pad_sequences(next_seq, padding="post", truncating="post", maxlen=max_answer_length) 
-    output_answers.extend(next_seq)
 
   return input_answers, output_answers, all_questions, all_contexts
 
@@ -293,7 +294,7 @@ def train_main():
   print('Starting to train')
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
-                      epochs=5,
+                      epochs=48,
                       verbose=1,
                       validation_data=(val_in, val_out))
 
