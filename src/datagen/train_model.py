@@ -25,7 +25,7 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
-DEBUG = False
+DEBUG = True
 
 GLOVE_DIR = '../../data'
 
@@ -110,6 +110,34 @@ def remove_duplicate_quads(a, b, c, d, cycle_size):
         seen.add(quad)
 
   return res_a, res_b, res_c, res_d
+
+def create_training_tuples(answers, questions, contexts, max_answer_length, answers_tok):
+  ''' returns context, answer, question lists, where the ith element of each list is used as a training point '''
+  input_answers = []
+  output_answers = []
+  all_contexts = []
+  all_questions = []
+  for i, answer in enumerate(answers): # for each answer, loop over and pick the first i+1/i+2 vals until an end tag is found, use zeroes for the rest
+    curr_seq = []
+    next_seq = []
+    for j in range(max_answer_length): # train for every answer length
+      curr_seq.append(answer[:j+1]) # current answer
+      next_seq.append(answer[:j+2]) # next answer
+      all_contexts.append(contexts[i]) # constant context
+      all_questions.append(questions[i]) # contant question
+
+      next_word_tokenization = answer[j]
+      if answers_tok.sequences_to_texts([[next_word_tokenization]]) == ['ENDTAG']:
+        break
+
+    # add set of partial answers to our aggregate list of data
+    curr_seq = pad_sequences(curr_seq, padding="post", truncating="post", maxlen=max_answer_length)
+    input_answers.extend(curr_seq)
+    # add set of partial next answrs to our aggregate list 
+    next_seq = pad_sequences(next_seq, padding="post", truncating="post", maxlen=max_answer_length) 
+    output_answers.extend(next_seq)
+
+  return input_answers, output_answers, all_questions, all_contexts
 
 def train_main():
   # Preprocess / Split
@@ -235,17 +263,9 @@ def train_main():
 
   K.set_value(model.optimizer.learning_rate, 0.001)
 
-  # create repeated sequences for each answer to train 'one word' at a time
-  train_answers, next_train_answers = create_sequences_of_answers(trainanswer, config['alen'])
-  val_answers, next_val_answers = create_sequences_of_answers(valanswer, config['alen'])
-
-  # ensure all arrays have the same length by repeating question and context alen times
-  trainquestion, traincontext, valquestion, valcontext = duplicate_elements(
-      [trainquestion, traincontext, valquestion, valcontext], config['alen'])
-
-  # remove duplicates
-  train_answers, trainquestion, traincontext, next_train_answers = remove_duplicate_quads(train_answers, trainquestion, traincontext, next_train_answers, len(trainquestion)//config['alen'])
-  val_answers, valquestion, valcontext, next_val_answers = remove_duplicate_quads(val_answers, valquestion, valcontext, next_val_answers, len(valquestion)//config['alen'])
+  # Generate training and validation set 'one word at a time'
+  train_answers, next_train_answers, trainquestion, traincontext = create_training_tuples(trainanswer, trainquestion, traincontext, config['alen'], answer_tokenizer)
+  val_answers, next_val_answers, valquestion, valcontext = create_training_tuples(valanswer, valquestion, valcontext, config['alen'], answer_tokenizer)
   
   # Convert to np arrays
   trainquestion = np.array(trainquestion)
