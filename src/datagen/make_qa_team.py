@@ -35,7 +35,8 @@ def generate_qa(types_to_qs):
   
   lines = f_c.readlines()
 
-  for line in lines[::5]:
+  for line in lines:
+    line = line[9:-7]
     player_info = eval(line)
     name = player_info['info']['DISPLAY_FIRST_LAST']
     city = player_info['info']['TEAM_CITY']
@@ -46,10 +47,12 @@ def generate_qa(types_to_qs):
       question = question_temp.replace('_', name)
 
       if status == 'Inactive':
+        answer = f'He played for the {city} {team}.'
         question = question.replace('is', 'was')
         question = question.replace('does', 'did')
+      else:
+        answer = f'He plays for the {city} {team}.'
       
-      answer = city + ' ' + team
       f_q.write('STARTTAG {} ENDTAG\n'.format(question))
       f_a.write('STARTTAG {} ENDTAG\n'.format(answer))
 

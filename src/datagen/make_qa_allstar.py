@@ -37,6 +37,7 @@ def generate_qa(types_to_qs):
   lines = f_c.readlines()
 
   for line in lines[::5]:
+    line = line[9:-7]
     player_info = eval(line)
     name = player_info['info']['DISPLAY_FIRST_LAST']
     status = player_info['info']['ROSTERSTATUS']

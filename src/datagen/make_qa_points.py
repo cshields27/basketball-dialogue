@@ -15,8 +15,8 @@ from collections import defaultdict
 
 QUESTION_TEMPLATES_PATH = '../../data/questiontemplates.txt'
 CONTEXTS_PATH = '../../data/contexts_original.test'
-QUESTIONS_PATH = '../../data/questions_averages.test'
-ANSWERS_PATH = '../../data/answers_averages.test'
+QUESTIONS_PATH = '../../data/questions_points.test'
+ANSWERS_PATH = '../../data/answers_points.test'
 
 def generate_questions():
   ''' Read questions templates into a dict mapping type to templates '''
@@ -35,7 +35,8 @@ def generate_qa(types_to_qs):
   
   lines = f_c.readlines()
 
-  for line in lines[::5]:
+  for line in lines:
+    line = line[9:-7]
     player_info = eval(line)
     name = player_info['info']['DISPLAY_FIRST_LAST']
     status = player_info['info']['ROSTERSTATUS']
@@ -49,9 +50,9 @@ def generate_qa(types_to_qs):
         question = question.replace('is', 'was')
         question = question.replace('does', 'did')
         question = question.replace('are', 'were')
-        answer = name + ' averaged ' + ppg + ' points per game in their career.'
+        answer = f'{name} averaged {ppg} points per game in his career.'
       else:
-        answer = name + ' averaged ' + ppg + ' points per game in the ' + season + ' season.'
+        answer = f'{name} averaged {ppg} points per game in the {season} season.'
 
       f_q.write('STARTTAG {} ENDTAG\n'.format(question))
       f_a.write('STARTTAG {} ENDTAG\n'.format(answer))
