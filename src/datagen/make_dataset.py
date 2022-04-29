@@ -49,7 +49,7 @@ def make_dataset():
     # read from each file, append to overall training set
     questions = q_file.readlines()
     answers = a_file.readlines()
-    for j in range(0, len(questions), 50):
+    for j in range(0, len(questions), 51):
       tq_p.write(questions[j])
       tc_p.write(contexts[j//5])
       ta_p.write(answers[j])

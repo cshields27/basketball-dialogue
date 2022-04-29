@@ -59,7 +59,7 @@ def tok_question(questions_tok, question):
   question = f'STARTTAG {question} ENDTAG'
   question = preprocess(question, True)
   tokenized_question = questions_tok.texts_to_sequences([question])
-  tokenized_question = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
+  tokenized_question = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=20)
   return tokenized_question
 
 def load_model():
@@ -70,10 +70,9 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
   context_tokenization = contexts_tok.texts_to_sequences([preprocess(context)])
   context_tokenization = pad_sequences(context_tokenization, padding="post", truncating="post", maxlen=1000)
   prediction = answers_tok.texts_to_sequences(['STARTTAG'])
-  prediction = pad_sequences(prediction, padding="post", truncating="post", maxlen=10)
-  question_tokenization = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=10)
+  prediction = pad_sequences(prediction, padding="post", truncating="post", maxlen=20)
+  question_tokenization = pad_sequences(tokenized_question, padding="post", truncating="post", maxlen=20)
   
-
   word_num = 1
   while True:
     print(f'{word_num}: Answer input:  {prediction[0]}')

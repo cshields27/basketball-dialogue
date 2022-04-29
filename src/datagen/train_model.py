@@ -72,7 +72,7 @@ def create_training_tuples(answers, questions, contexts, max_answer_length, answ
   for i, answer in enumerate(answers): # for each answer, loop over and pick the first i+1/i+2 vals until an end tag is found, use zeroes for the rest
     curr_seq = []
     next_answer = 0
-    for j in range(max_answer_length): # train for every answer length
+    for j in range(max_answer_length - 1): # train for every answer length
       curr_seq.append(answer[:j+1]) # current answer
       next_answer = answer[j+1] # next answer
       all_contexts.append(contexts[i]) # constant context
@@ -176,9 +176,9 @@ def train_main():
   config['q_vocabsize'] = vocab_size
   config['c_vocabsize'] = vocab_size
   config['a_vocabsize'] = vocab_size
-  config['qlen'] = 10
+  config['qlen'] = 20
   config['clen'] = 1000
-  config['alen'] = 10 # answers won't be very long
+  config['alen'] = 20 # answers won't be very long
   batch_size = 100
   config['batch_size'] = batch_size
   config['weights'] = [embedding_matrix]
@@ -246,7 +246,7 @@ def train_main():
   print('Starting to train')
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
-                      epochs=48,
+                      epochs=38,
                       verbose=1,
                       validation_data=(val_in, val_out))
 
