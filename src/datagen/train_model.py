@@ -29,10 +29,17 @@ DEBUG = False
 
 GLOVE_DIR = '../../data'
 
+'''
 p_end = 'debug' if DEBUG else 'test'
 CONTEXTS_PATH = f'../../data/contexts.{p_end}'
 ANSWERS_PATH = f'../../data/answers.{p_end}'
 QUESTIONS_PATH = f'../../data/questions.{p_end}'
+'''
+
+# new, mixed dataset
+QUESTIONS_PATH = '../../data/trainquestion.txt'
+CONTEXTS_PATH = '../../data/traincontext.txt'
+ANSWERS_PATH = '../../data/trainanswer.txt'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
