@@ -52,3 +52,18 @@ player_blocks,How many blocks per game does _ get?
 player_blocks,What is _'s bpg?
 player_blocks,_ bpg
 player_blocks,How many blocks does _ average?
+player_school,Where does _ go to school?
+player_school,Where does _ go to college?
+player_school,Where does _ go to university?
+player_school,_ school
+player_school,What school does _ go to?
+player_years,How many years has _ play?
+player_years,How long has _ played for?
+player_years,_ years
+player_years,How long has _ played?
+player_years,Years played _
+player_position,What position is _ playing?
+player_position,_ position
+player_position,Position _ plays?
+player_position,Which position does _ play?
+player_position,_ play what position?
