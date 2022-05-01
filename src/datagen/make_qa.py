@@ -34,6 +34,15 @@ APRPG = '../../data/answers_rebounds.test'
 QPASG = '../../data/questions_allstar.test'
 APASG = '../../data/answers_allstar.test'
 
+QPSCH = '../../data/questions_school.test'
+APSCH = '../../data/answers_school.test'
+
+QPYR = '../../data/questions_year.test'
+APYR = '../../data/answers_year.test'
+
+QPPOS = '../../data/questions_position.test'
+APPOS = '../../data/answers_position.test'
+
 def answer_stats_question(stat_str, stat, question_temps, name, status, season, f_q, f_a):
   ''' Answers a question for stats such as ppg '''
 
@@ -82,6 +91,14 @@ def generate_qa(types_to_qs):
   fqasg = open(QPASG, 'w')
   faasg = open(APASG, 'w')
 
+  fqsch = open(QPSCH, 'w')
+  fasch = open(APSCH, 'w')
+
+  fqyr = open(QPYR, 'w')
+  fayr = open(APYR, 'w')
+
+  fqpos = open(QPPOS, 'w')
+  fapos = open(APPOS, 'w')
   
   lines = f_c.readlines()
 
@@ -92,12 +109,16 @@ def generate_qa(types_to_qs):
     city = player_info['info']['TEAM_CITY']
     team = player_info['info']['TEAM_NAME']
     status = player_info['info']['ROSTERSTATUS']
+    school = player_info['info']['SCHOOL']
+    years = player_info['info']['SEASON_EXP']
+    position = player_info['info']['POSITION']
     ppg = player_info['averages']['PTS']
     rpg = player_info['averages']['REB']
     apg = player_info['averages']['AST']
     #allstar_appearances = int(player_info['averages']['ALL_STAR_APPEARANCES'])
     allstar_appearances = 0
     season = player_info['averages']['TimeFrame']
+    
 
     ''' Answer player team question '''
     for question_temp in types_to_qs['player_team']:
@@ -147,6 +168,49 @@ def generate_qa(types_to_qs):
       fqasg.write(f'STARTTAG {question} ENDTAG\n')
       faasg.write(f'STARTTAG {answer} ENDTAG\n')
 
+    ''' Answer school question '''
+    for question_temp in types_to_qs['player_school']:
+      question = question_temp.replace('_', name)
+
+      if status == 'Inactive':
+        question = question.replace('is', 'was')
+        question = question.replace('does', 'did')
+        question = question.replace('are', 'were')
+      answer = f'{name} played in {school} for college.'
+
+      fqsch.write(f'STARTTAG {question} ENDTAG\n')
+      fasch.write(f'STARTTAG {answer} ENDTAG\n')
+
+    ''' Answer years question '''
+    for question_temp in types_to_qs['player_years']:
+      question = question_temp.replace('_', name)
+
+      if status == 'Inactive':
+        question = question.replace('is', 'was')
+        question = question.replace('does', 'did')
+        question = question.replace('are', 'were')
+        answer = f'{name} played for {years} years.'
+      else:
+        answer = f'{name} has been playing for {years} years.'
+
+      fqyr.write(f'STARTTAG {question} ENDTAG\n')
+      fayr.write(f'STARTTAG {answer} ENDTAG\n')
+
+    ''' Answer position question '''
+    for question_temp in types_to_qs['player_position']:
+      question = question_temp.replace('_', name)
+
+      if status == 'Inactive':
+        question = question.replace('is', 'was')
+        question = question.replace('does', 'did')
+        question = question.replace('are', 'were')
+        answer = f'{name} played at {position}.'
+      else:
+        answer = f'{name} is playing {position}.'
+
+      fqpos.write(f'STARTTAG {question} ENDTAG\n')
+      fapos.write(f'STARTTAG {answer} ENDTAG\n')
+
   fqteam.close()
   fateam.close()
 
@@ -162,6 +226,15 @@ def generate_qa(types_to_qs):
 
   fqasg.close()
   faasg.close()
+
+  fqsch.close()
+  fasch.close()
+
+  fqyr.close()
+  fayr.close()
+
+  fqpos.close()
+  fapos.close()
 
 
 def main():
