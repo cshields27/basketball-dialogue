@@ -77,33 +77,6 @@ def generate_qa(types_to_qs):
   # Open file
   f_c = open(CONTEXTS_PATH, 'r')
 
-  # fqteam = open(QPTEAM, 'w')
-  # fateam = open(APTEAM, 'w')
-
-  # fqavg = open(QPAVG, 'w')
-  # faavg = open(APAVG, 'w')
-
-  # fqppg = open(QPPPG, 'w')
-  # fappg = open(APPPG, 'w')
-
-  # fqrpg = open(QPRPG, 'w')
-  # farpg = open(APRPG, 'w')
-
-  # fqapg = open(QPAPG, 'w')
-  # faapg = open(APAPG, 'w')
-
-  # fqasg = open(QPASG, 'w')
-  # faasg = open(APASG, 'w')
-
-  # fqsch = open(QPSCH, 'w')
-  # fasch = open(APSCH, 'w')
-
-  # fqyr = open(QPYR, 'w')
-  # fayr = open(APYR, 'w')
-
-  # fqpos = open(QPPOS, 'w')
-  # fapos = open(APPOS, 'w')
-
   fc = open(CONTEXTS_WRITE, 'w')
   fq = open(QUESTIONS_PATH, 'w')
   fa = open(ANSWERS_PATH, 'w')
@@ -140,16 +113,11 @@ def generate_qa(types_to_qs):
       else:
         answer = f'{name} plays for the {city} {team}.'
       
-      # fqteam.write('STARTTAG {} ENDTAG\n'.format(question))
-      # fateam.write('STARTTAG {} ENDTAG\n'.format(answer))
       fq.write('STARTTAG {} ENDTAG\n'.format(question))
       fa.write('STARTTAG {} ENDTAG\n'.format(answer))
       fc.write(context)
 
     ''' Answer each stats question '''
-    # answer_stats_question('points', ppg, types_to_qs['player_points'], name, status, season, fqppg, fappg, fc, context)
-    # answer_stats_question('assists', apg, types_to_qs['player_assists'], name, status, season, fqapg, faapg, fc, context)
-    # answer_stats_question('rebounds', rpg, types_to_qs['player_rebounds'], name, status, season, fqrpg, farpg, fc, context)
     answer_stats_question('points', ppg, types_to_qs['player_points'], name, status, season, fq, fa, fc, context)
     answer_stats_question('assists', apg, types_to_qs['player_assists'], name, status, season, fq, fa, fc, context)
     answer_stats_question('rebounds', rpg, types_to_qs['player_rebounds'], name, status, season, fq, fa, fc, context)
@@ -166,8 +134,6 @@ def generate_qa(types_to_qs):
       else:
         answer = f'{name} averaged {ppg} points per game, {apg} assists per game, and {rpg} rebounds per game in the {season} season.'
 
-      # fqavg.write('STARTTAG {} ENDTAG\n'.format(question))
-      # faavg.write('STARTTAG {} ENDTAG\n'.format(answer))
       fq.write('STARTTAG {} ENDTAG\n'.format(question))
       fa.write('STARTTAG {} ENDTAG\n'.format(answer))
       fc.write(context)
@@ -217,8 +183,6 @@ def generate_qa(types_to_qs):
       else:
         answer = f'{name} has been playing for {years} years.'
 
-      # fqyr.write(f'STARTTAG {question} ENDTAG\n')
-      # fayr.write(f'STARTTAG {answer} ENDTAG\n')
       fq.write('STARTTAG {} ENDTAG\n'.format(question))
       fa.write('STARTTAG {} ENDTAG\n'.format(answer))
       fc.write(context)
@@ -235,36 +199,9 @@ def generate_qa(types_to_qs):
       else:
         answer = f'{name} plays {position}.'
 
-      # fqpos.write(f'STARTTAG {question} ENDTAG\n')
-      # fapos.write(f'STARTTAG {answer} ENDTAG\n')
       fq.write('STARTTAG {} ENDTAG\n'.format(question))
       fa.write('STARTTAG {} ENDTAG\n'.format(answer))
       fc.write(context)
-
-  # fqteam.close()
-  # fateam.close()
-
-  # fqavg.close()
-  # faavg.close()
-
-  # fqppg.close()
-  # fappg.close()
-  # fqrpg.close()
-  # farpg.close()
-  # fqapg.close()
-  # faapg.close()
-
-  # fqasg.close()
-  # faasg.close()
-
-  # fqsch.close()
-  # fasch.close()
-
-  # fqyr.close()
-  # fayr.close()
-
-  # fqpos.close()
-  # fapos.close()
 
   fq.close()
   fa.close()

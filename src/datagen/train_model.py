@@ -99,8 +99,6 @@ def train_main():
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
     for i, question_line in enumerate(q_p.readlines()):
-      if i == 100:
-        break
       try:
         context = preprocess(c_p.readline(), False)
         answer = preprocess(a_p.readline(), False)
