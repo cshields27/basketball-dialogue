@@ -150,11 +150,9 @@ def generate_qa(types_to_qs):
       else:
         answer = f'{name} {has}never made an All-Star team'
 
-      # fqasg.write(f'STARTTAG {question} ENDTAG\n')
-      # faasg.write(f'STARTTAG {answer} ENDTAG\n')
-      fq.write('STARTTAG {} ENDTAG\n'.format(question))
-      fa.write('STARTTAG {} ENDTAG\n'.format(answer))
-      fc.write(context)
+      #fq.write('STARTTAG {} ENDTAG\n'.format(question))
+      #fa.write('STARTTAG {} ENDTAG\n'.format(answer))
+      #fc.write(context)
 
     ''' Answer school question '''
     for question_temp in types_to_qs['player_school']:
