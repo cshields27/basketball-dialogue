@@ -28,7 +28,7 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
 DEBUG = False
-TRAIN = False
+TRAIN = True
 
 GLOVE_DIR = '../../data'
 
@@ -116,8 +116,8 @@ def make_training_data():
         pass # line was blank
 
   # Split
-  random.shuffle(dat[:len(dat)//8])
-  context, answer, question = zip(*dat)
+  random.shuffle(dat)
+  context, answer, question = zip(*dat[:len(dat)//10])
 
   trainlen = int(len(answer) * 0.80)
   vallen = int(len(answer) * 0.10)
@@ -279,7 +279,6 @@ def train_main():
   f = open('../../data/tc.pkl', 'rb')
   traincontext = pickle.load(f)
   f.close()
-  print(trainquddestion)
   print('Finished reading in training data')
 
   f = open('../../data/vq.pkl', 'rb')
@@ -330,7 +329,7 @@ def train_main():
   print('Starting to train')
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
-                      epochs=30,
+                      epochs=40,
                       verbose=1,
                       validation_data=(val_in, val_out))
 
