@@ -28,7 +28,7 @@ from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, LSTM, Embedding, Conv1D, Masking, Flatten
 
 DEBUG = False
-TRAIN = True
+TRAIN = False
 
 GLOVE_DIR = '../../data'
 
@@ -116,7 +116,7 @@ def make_training_data():
         pass # line was blank
 
   # Split
-  random.shuffle(dat)
+  random.shuffle(dat[:len(dat)//8])
   context, answer, question = zip(*dat)
 
   trainlen = int(len(answer) * 0.80)
@@ -257,24 +257,30 @@ def train_main():
 
   # Read in data
   print('Reading in pickle files...')
+  print('Reading in train questions')
   f = open('../../data/tq.pkl', 'rb')
   trainquestion = pickle.load(f)
   f.close()
+  print('Reading in train answers')
   f = open('../../data/ta.pkl', 'rb')
   train_answers = pickle.load(f)
   f.close()
+  print('Reading in next train answers')
   f = open('../../data/tna.pkl', 'rb')
   vals = pickle.load(f) # just a list of next answer indices
+  print('Generating next train answers...')
   next_train_answers = []
   for val in vals:
     ans = [0] * vocab_size
     ans[val] = 1
     next_train_answers.append(ans)
   f.close()
+  print('Reading in train contexts...')
   f = open('../../data/tc.pkl', 'rb')
   traincontext = pickle.load(f)
   f.close()
   print(trainquddestion)
+  print('Finished reading in training data')
 
   f = open('../../data/vq.pkl', 'rb')
   valquestion = pickle.load(f)
