@@ -97,6 +97,7 @@ def generate_qa(types_to_qs):
     ppg = player_info['averages']['PTS']
     rpg = player_info['averages']['REB']
     apg = player_info['averages']['AST']
+    career_data = player_info['career_data']
     #allstar_appearances = int(player_info['averages']['ALL_STAR_APPEARANCES'])
     allstar_appearances = 0
     season = player_info['averages']['TimeFrame']
@@ -202,6 +203,35 @@ def generate_qa(types_to_qs):
       fq.write('STARTTAG {} ENDTAG\n'.format(question))
       fa.write('STARTTAG {} ENDTAG\n'.format(answer))
       fc.write(context)
+
+    ''' Answer best season question '''
+    for question_temp in types_to_qs['player_best_season']:
+
+      question = question_temp.replace('_', name)
+      best_season = 0
+      best_season_total = 0
+      for season, stats in career_data.items():
+        # let's just use a really simple metric to quantify 'best' season
+        for key in stats:
+          stats[key] = stats[key] if stats[key] else 0
+
+        total = stats['PTS'] + stats['REB'] + stats['AST'] + stats['BLK'] + stats['FG_PCT']*100 - stats['TOV']
+        if total >= best_season_total:
+          best_season = season
+          best_season_total = total
+        
+      if best_season != 0:
+        for key in career_data[best_season]:
+          career_data[best_season][key] = career_data[best_season][key] if career_data[best_season][key] else 0
+
+        best_ppg = str(round(career_data[best_season]['PTS']/career_data[best_season]['GP'], 2))
+        best_rpg = str(round(career_data[best_season]['REB']/career_data[best_season]['GP'], 2))
+        best_apg = str(round(career_data[best_season]['AST']/career_data[best_season]['GP'], 2))
+        
+        answer = f"{name} had his best season in {best_season}. He averaged {best_ppg} points, {best_rpg} rebounds, and {best_apg} assists."  
+        fq.write('STARTTAG {} ENDTAG\n'.format(question))
+        fa.write('STARTTAG {} ENDTAG\n'.format(answer))
+        fc.write(context)
 
   fq.close()
   fa.close()
