@@ -37,9 +37,9 @@ QUESTIONS_PATH = f'../../data/questions.{p_end}'
 '''
 
 # new, mixed dataset
-QUESTIONS_PATH = '../../data/trainquestion.txt'
-CONTEXTS_PATH = '../../data/traincontext.txt'
-ANSWERS_PATH = '../../data/trainanswer.txt'
+QUESTIONS_PATH = '../../data/questions.test'
+CONTEXTS_PATH = '../../data/contexts.test'
+ANSWERS_PATH = '../../data/answers.test'
 
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
@@ -99,6 +99,8 @@ def train_main():
       open(ANSWERS_PATH, 'r')   as a_p, \
       open(QUESTIONS_PATH, 'r') as q_p:
     for i, question_line in enumerate(q_p.readlines()):
+      if i > 3000:
+        break
       try:
         context = preprocess(c_p.readline(), False)
         answer = preprocess(a_p.readline(), False)
