@@ -20,8 +20,9 @@ Q_TOK_PATH = '../../data/question_tok.json'
 MODEL_PATH = '../../data/model_running.h5'
 
 def read_question():
-  user_in = input('- ')
-  if not user_in:
+  try:
+    user_in = input('- ')
+  except:
     exit()
 
   try:
