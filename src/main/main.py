@@ -20,7 +20,18 @@ Q_TOK_PATH = '../../data/question_tok.json'
 MODEL_PATH = '../../data/model_running.h5'
 
 def read_question():
-  return input('- ').split(',')
+  user_in = input('- ')
+  if not user_in:
+    exit()
+
+  try:
+    question, cline = user_in.rsplit(',', 1)
+    cline = int(cline)
+    if cline <= 0:
+      cline = None
+    return question, cline
+  except:
+    return user_in, None
 
 def preprocess(line, entire = False):
   ltext = line.replace('\n', ' ').strip()
@@ -37,7 +48,7 @@ def preprocess(line, entire = False):
 def get_context(path, cline):
   lines = []
   with open(path) as f:
-    return f.readlines()[cline]
+    return f.readlines()[cline - 1]
 
 def load_tokenizers():
   with open(C_TOK_PATH) as f:
@@ -75,22 +86,22 @@ def get_prediction(context, contexts_tok, answers_tok, tokenized_question, model
   
   word_num = 1
   while True:
-    print(f'{word_num}: Answer input:  {prediction[0]}')
-    print(f'{word_num}: Question:      {question_tokenization[0]}')
-    
     out = model.predict((np.asarray(question_tokenization), np.asarray(prediction), np.asarray(context_tokenization)))
     predict_index = np.argmax(out[0]) # find the max value in the output prediction
     prediction[0][word_num] = predict_index # add the max index to our prediction
     next_word = answers_tok.sequences_to_texts([[predict_index]])
 
-    print(f'{word_num}: Answer output: {prediction[0]}\n')
     if next_word == ['ENDTAG'] or word_num == 9: # exit condition
-      return answers_tok.sequences_to_texts(prediction)
+      #return answers_tok.sequences_to_texts(prediction)
+      return prediction
     word_num += 1
 
 def detokenize_display(answers_tok, tokenized_answer):
   answer_seq = answers_tok.sequences_to_texts(tokenized_answer)
-  answer_str = answer_seq[0].replace('<NULL>', '')
+  answer_str = answer_seq[0].replace('STARTTAG', '')
+  answer_str = answer_str.replace('ENDTAG', '')
+  answer_str = answer_str.replace('UNK', '')
+  answer_str = answer_str.strip()
   print(answer_str)
 
 def main():
@@ -99,13 +110,24 @@ def main():
   contexts_tok, answers_tok, questions_tok = load_tokenizers()
   model = load_model()
   print('Ok, you can begin asking questions now!')
-  question, cline = read_question()
+  print('Input a question, followed by a comma and the line of context desired (from data/contexts_original.test)')
+  print('If no context is provided, the most recent one will be used')
+
+  question = None
+  cline = None
+  while cline is None:
+    question, cline = read_question()
   cline = int(cline)
+
   while question:
     tokenized_question = tok_question(questions_tok, question)
-    print(get_prediction(get_context(CONTEXTS_PATH, cline), contexts_tok, answers_tok, tokenized_question, model))
-    question, cline = read_question()
-    cline = int(cline)
+    prediction = get_prediction(get_context(CONTEXTS_PATH, cline), contexts_tok, answers_tok, tokenized_question, model)
+    detokenize_display(answers_tok, prediction)
+
+    # Get next question
+    question, nextcline = read_question()
+    if nextcline is not None:
+      cline = int(nextcline)
     
 if __name__ == '__main__':
   main()
