@@ -8,26 +8,6 @@ player_averages,What does _ average a game?
 player_averages,What are _'s stats per game?
 player_averages,How many points, rebounds, and assists does _ get?
 player_averages,_ averages
-player_champion,Has _ been a champion?
-player_champion,Has _ ever won a ring?
-player_champion,Has _ won the Finals?
-player_champion,Does _ have a title?
-player_champion,Does _ have a ring?
-player_allstar,Has _ been an all-star?
-player_allstar,Is _ an all-star?
-player_allstar,_ all-star
-player_allstar,Has _ made the all-star team?
-player_allstar,Has _ played in an all-star game?
-player_allnba,Has _ been on an all-nba team?
-player_allnba,Is _ on the all-nba team?
-player_allnba,_ all-nba
-player_allnba,Has _ made the all-nba team?
-player_allnba,Is _ all-nba?
-player_mvp,Has _ ever won MVP?
-player_mvp,Is _ an MVP?
-player_mvp,How many MVPs has _ won?
-player_mvp,Has _ won MVP?
-player_mvp,_ most valuable player
 player_points,What is _'s points per game?
 player_points,How many points per game does _ average?
 player_points,What is _'s ppg
@@ -68,3 +48,8 @@ player_position,_ position
 player_position,Position _ plays?
 player_position,Which position does _ play?
 player_position,_ play what position?
+player_best_season,When was _ best season?
+player_best_season,_ best season
+player_best_season,_ best stats
+player_best_season,What year was _ most productive?
+player_best_season,What was _ greatest season?
