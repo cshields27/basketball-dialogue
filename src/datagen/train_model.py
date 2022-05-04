@@ -15,6 +15,7 @@ import numpy as np
 import pickle
 from attention_model import AttentionGRUModel
 from collections import defaultdict
+from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.text import tokenizer_from_json
 from sklearn.naive_bayes import MultinomialNB
@@ -40,6 +41,7 @@ QUESTIONS_PATH = f'../../data/questions.{p_end}'
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
 Q_TOK_PATH = '../../data/question_tok.json'
+RUNNING_MODEL_PATH = '../../data/model_running.h5'
 MODEL_PATH = '../../data/model.h5'
 
 np.random.seed(1337)
@@ -117,6 +119,7 @@ def make_training_data():
 
   # Split
   random.shuffle(dat)
+  #context, answer, question = zip(*dat)
   context, answer, question = zip(*dat[:len(dat)//10])
 
   trainlen = int(len(answer) * 0.80)
@@ -327,11 +330,13 @@ def train_main():
       #print(f'{i}: Context:       {traincontext[i]}\n')
     
   print('Starting to train')
+  checkpoint = ModelCheckpoint(RUNNING_MODEL_PATH, monitor='loss', verbose=1, save_best_only=True, mode='auto', period=1)
   history = model.fit(train_in, train_out,
                       batch_size=batch_size,
-                      epochs=40,
+                      epochs=30,
                       verbose=1,
-                      validation_data=(val_in, val_out))
+                      validation_data=(val_in, val_out),
+                      callbacks=[checkpoint])
 
   # Save model
   model.save(MODEL_PATH)

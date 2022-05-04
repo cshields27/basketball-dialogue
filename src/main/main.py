@@ -17,7 +17,7 @@ CONTEXTS_PATH = '../../data/contexts_original.test'
 C_TOK_PATH = '../../data/context_tok.json'
 A_TOK_PATH = '../../data/answer_tok.json'
 Q_TOK_PATH = '../../data/question_tok.json'
-MODEL_PATH = '../../data/model.h5'
+MODEL_PATH = '../../data/model_running.h5'
 
 def read_question():
   return input('- ').split(',')
